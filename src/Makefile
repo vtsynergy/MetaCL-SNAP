@@ -6,13 +6,13 @@ endif
 ifeq ($(shell uname), Darwin)
 	OCL = -framework OpenCL
 else
-	OCL = -lOpenCL
+	OCL = -lOpenCL -lmm_opencl_backend -lmetamorph 
 endif
 
-CFLAGS_			= -O3
-CFLAGS_INTEL	= -O3 -std=c99
-CFLAGS_CRAY		= -O3
-CFLAGS_GNU		= -O3 -std=c99 -lm
+CFLAGS_			=  -D WITH_OPENCL -I ~/metaCL_workspace/MetaMorph/include -I ~/metaCL_workspace/MetaMorph/metamorph-backends/opencl-backend  -O3
+CFLAGS_INTEL	=  -D WITH_OPENCL -I ~/metaCL_workspace/MetaMorph/include -I ~/metaCL_workspace/MetaMorph/metamorph-backends/opencl-backend -O3 -std=c99
+CFLAGS_CRAY		=  -D WITH_OPENCL -I ~/metaCL_workspace/MetaMorph/include -I ~/metaCL_workspace/MetaMorph/metamorph-backends/opencl-backend -O3
+CFLAGS_GNU		=  -D WITH_OPENCL -I ~/metaCL_workspace/MetaMorph/include -I ~/metaCL_workspace/MetaMorph/metamorph-backends/opencl-backend -O3 -std=c99 -lm
 
 MPI_COMPILER 	= mpicc
 
@@ -30,8 +30,9 @@ snap: \
 	scalar_flux.c \
 	convergence.c \
 	population.c \
+	metacl_module.c\
 	profiler.c
-	$(MPI_COMPILER) $^ $(CFLAGS_$(COMPILER)) $(OCL) $(OPTIONS) -o $@
+	$(MPI_COMPILER) $^ $(CFLAGS_$(COMPILER))    -L ~/metaCL_workspace/MetaMorph/lib  $(OCL) $(OPTIONS) -o $@
 
 kernels/%.h:	kernels/%.cl
 	./stringify_opencl $< $@
@@ -52,6 +53,7 @@ ocl_init.c:	$(KERNEL_HEADER_FILES)
 	@touch ocl_init.c
 
 .PHONY: clean
-
+run: 
+	LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/metaCL_workspace/MetaMorph/lib  ./snap $(i) 
 clean:
 	rm -f snap kernels/*.h
