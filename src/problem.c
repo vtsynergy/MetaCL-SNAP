@@ -261,17 +261,23 @@ void init_velocity_delta(
 {
     // We do this on the device because SNAP does it every outer
     cl_int err;
+    /*
     err = clSetKernelArg(context->kernels.calc_velocity_delta, 0, sizeof(cl_mem), &buffers->velocities);
     err |= clSetKernelArg(context->kernels.calc_velocity_delta, 1, sizeof(double), &problem->dt);
     err |= clSetKernelArg(context->kernels.calc_velocity_delta, 2, sizeof(cl_mem), &buffers->velocity_delta);
     check_ocl(err, "Setting velocity delta calculation kernel arguments");
-
+    
     size_t global[] = {problem->ng};
     err = clEnqueueNDRangeKernel(context->queue,
         context->kernels.calc_velocity_delta,
         1, 0, global, NULL,
         0, NULL, &velocity_delta_event);
+    */
+    size_t global[3] = {problem->ng,1,1};
+    size_t local[3] = {0,0,0};
+    err = meta_gen_opencl_calc_velocity_delta_calc_velocity_delta(context->queue, global, local, &buffers->velocities, problem->dt, &buffers->velocity_delta, 0, &velocity_delta_event);
     check_ocl(err, "Enqueue velocity delta calculation kernel");
+    
 }
 
 void calculate_dd_coefficients(
@@ -282,6 +288,7 @@ void calculate_dd_coefficients(
 {
     // We do this on the device because SNAP does it every outer
     cl_int err;
+    /*
     err = clSetKernelArg(context->kernels.calc_dd_coeff, 0, sizeof(double), &problem->dx);
     err |= clSetKernelArg(context->kernels.calc_dd_coeff, 1, sizeof(double), &problem->dy);
     err |= clSetKernelArg(context->kernels.calc_dd_coeff, 2, sizeof(double), &problem->dz);
@@ -297,6 +304,10 @@ void calculate_dd_coefficients(
         context->kernels.calc_dd_coeff,
         1, 0, global, NULL,
         0, NULL, NULL);
+    */
+    size_t global[3] = {problem->nang,1,1};
+    size_t local[3] = {0,0,0};
+    err= meta_gen_opencl_calc_dd_coeff_calc_dd_coeff(context->queue, global, local, problem->dx, problem->dy, problem->dz, &buffers->eta, &buffers->xi, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k, 0, NULL);
     check_ocl(err, "Enqueue diamond difference calculation kernel");
 }
 
@@ -309,6 +320,7 @@ void calculate_denominator(
 {
     // We do this on the device because SNAP does it every outer
     cl_int err;
+    /*
     err = clSetKernelArg(context->kernels.calc_denominator, 0, sizeof(unsigned int), &rankinfo->nx);
     err |= clSetKernelArg(context->kernels.calc_denominator, 1, sizeof(unsigned int), &rankinfo->ny);
     err |= clSetKernelArg(context->kernels.calc_denominator, 2, sizeof(unsigned int), &rankinfo->nz);
@@ -322,11 +334,16 @@ void calculate_denominator(
     err |= clSetKernelArg(context->kernels.calc_denominator, 10, sizeof(cl_mem), &buffers->dd_k);
     err |= clSetKernelArg(context->kernels.calc_denominator, 11, sizeof(cl_mem), &buffers->denominator);
     check_ocl(err, "Setting denominator kernel arguments");
-
-    size_t global[] = {problem->nang, problem->ng};
+   
+    //size_t global[] = {problem->nang, problem->ng};
+    size_t global[3] = {problem->nang, problem->ng,1};
     err = clEnqueueNDRangeKernel(context->queue,
         context->kernels.calc_denominator,
         2, 0, global, NULL,
         0, NULL, &denominator_event);
+   */
+    size_t global[3] = {problem->nang, problem->ng,1};
+    size_t local[3] ={0,0,0};
+    err= meta_gen_opencl_calc_denominator_calc_denominator(context->queue, global, local, rankinfo->nx, rankinfo->ny, rankinfo->nz, problem->nang, problem->ng, &buffers->mat_cross_section, &buffers->velocity_delta, &buffers->mu, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k, &buffers->denominator, 0, &denominator_event);
     check_ocl(err, "Enqueue denominator kernel");
 }
