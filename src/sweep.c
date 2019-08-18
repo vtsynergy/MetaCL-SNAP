@@ -1,6 +1,10 @@
 
 #include "sweep.h"
-
+extern double ker_launch_over[9];
+extern double ker_exec_time[9];
+extern int ker_call_nums[9];
+extern cl_ulong start_time, end_time;extern size_t return_bytes;
+extern struct timespec start, end;
 void init_planes(struct plane** planes, unsigned int *num_planes, struct problem * problem, struct rankinfo * rankinfo)
 {
     *num_planes = rankinfo->nx + rankinfo->ny + problem->chunk - 2;
@@ -67,14 +71,13 @@ void sweep_plane(
     )
 {
     cl_int err;
-    size_t global[3] = {problem->nang*problem->ng, planes[plane].num_cells,1};
-    size_t local[3] = {0,0,0};
+    cl_event temp1;
     // 2 dimensional kernel
     // First dimension: number of angles * number of groups
     // Second dimension: number of cells in plane
-    //size_t global[3] = {problem->nang*problem->ng, planes[plane].num_cells};
-   /*
+    size_t global[] = {problem->nang*problem->ng, planes[plane].num_cells};
     // Set the (many) kernel arguments
+    clock_gettime(CLOCK_REALTIME, &start);
     err = clSetKernelArg(context->kernels.sweep_plane, 0, sizeof(unsigned int), &rankinfo->nx);
     err |= clSetKernelArg(context->kernels.sweep_plane, 1, sizeof(unsigned int), &rankinfo->ny);
     err |= clSetKernelArg(context->kernels.sweep_plane, 2, sizeof(unsigned int), &rankinfo->nz);
@@ -101,16 +104,21 @@ void sweep_plane(
     err |= clSetKernelArg(context->kernels.sweep_plane, 23, sizeof(cl_mem), &buffers->flux_j);
     err |= clSetKernelArg(context->kernels.sweep_plane, 24, sizeof(cl_mem), &buffers->flux_k);
     err |= clSetKernelArg(context->kernels.sweep_plane, 25, sizeof(cl_mem), &buffers->angular_flux_out[octant]);
-
     check_ocl(err, "Setting plane sweep kernel arguments");
-
+    
     // Actually enqueue
     err = clEnqueueNDRangeKernel(context->queue,
         context->kernels.sweep_plane,
         2, 0, global, NULL,
-        0, NULL, NULL);
-    */
-    err = meta_gen_opencl_sweep_plane_sweep_plane(context->queue, global, local, rankinfo->nx, rankinfo->ny, rankinfo->nz, problem->nang, problem->ng, problem->cmom,istep, jstep, kstep, octant, z_pos, &buffers->planes[plane], &buffers->inner_source, &buffers->scat_coeff, &buffers-> dd_i, &buffers->dd_j, &buffers->dd_k, &buffers->mu, &buffers->velocity_delta, &buffers->mat_cross_section, &buffers->denominator, &buffers->angular_flux_in[octant], &buffers->flux_i, &buffers->flux_j, &buffers->flux_k, &buffers->angular_flux_out[octant], 0, NULL);
+        0, NULL, &temp1);
+    clFinish(context->queue);
+    clock_gettime(CLOCK_REALTIME, &end);
+    ker_launch_over[7]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
+    err = clGetEventProfilingInfo(temp1,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);
+    err = clGetEventProfilingInfo(temp1,CL_PROFILING_COMMAND_END,sizeof(cl_ulong), &end_time,&return_bytes);
+    ker_exec_time[7]+=(double)(end_time-start_time)/BILLION;
+    temp1=NULL;
     check_ocl(err, "Enqueue plane sweep kernel");
+    ker_call_nums[7]++;
 }
 
