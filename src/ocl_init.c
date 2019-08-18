@@ -2,8 +2,7 @@
 #include "profiler.h"
 #include "ocl_global.h"
 #include "ocl_kernels.h"
-#include "metamorph.h"
-#include "metacl_module.h"
+extern deviceIndex;
 #define MAX_DEVICES 16
 
 void check_ocl_error(const cl_int err, const char *msg, const int line, const char * file)
@@ -20,23 +19,23 @@ void init_ocl(struct context * context, const bool multigpu, const int rank)
     cl_int err;
 
     // Get list of platforms
-    /*
     cl_uint num_platforms;
     err = clGetPlatformIDs(0, NULL, &num_platforms);
     check_ocl(err, "Getting number of platforms");
     cl_platform_id *platforms = malloc(num_platforms*sizeof(cl_platform_id));
     err = clGetPlatformIDs(num_platforms, platforms, &num_platforms);
     check_ocl(err, "Getting platforms");
-    
+
     // Get a GPU device
-    cl_device_type type = CL_DEVICE_TYPE_GPU;
+    cl_device_type type = CL_DEVICE_TYPE_ALL;
     cl_uint num_devices = 0;
     cl_device_id devices[MAX_DEVICES];
     for (unsigned int i = 0; i < num_platforms; i++)
     {
-        clGetDeviceIDs(platforms[i], type, MAX_DEVICES, devices, &num_devices);
-        if (num_devices == 1)
-            break;
+        cl_uint num;
+        err = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_ALL, MAX_DEVICES-num_devices, devices+num_devices, &num);
+        check_ocl(err, "Getting devices");
+        num_devices += num;
     }
     free(platforms);
     if (num_devices == 0)
@@ -46,7 +45,7 @@ void init_ocl(struct context * context, const bool multigpu, const int rank)
     if (!multigpu)
     {
         // Just pick the first GPU device
-        context->device = devices[0];
+        context->device = devices[deviceIndex];
     #ifdef __APPLE__
         // If we on my MacBook we need the second GPU (the discrete one)
         context->device = devices[1];
@@ -59,10 +58,9 @@ void init_ocl(struct context * context, const bool multigpu, const int rank)
     }
 
     // Create a context and command queue for the device
-    cl_platform_id *fplatforms;
-    //context->context = clCreateContext(0, 1, &context->device, NULL, NULL, &err);
+    context->context = clCreateContext(0, 1, &context->device, NULL, NULL, &err);
     check_ocl(err, "Creating context");
-  
+
     if (profiling)
     {
         context->queue = clCreateCommandQueue(context->context, context->device, CL_QUEUE_PROFILING_ENABLE, &err);
@@ -77,31 +75,13 @@ void init_ocl(struct context * context, const bool multigpu, const int rank)
         context->copy_queue = clCreateCommandQueue(context->context, context->device, 0, &err);
         check_ocl(err, "Creating copy command queue");
     }
-    */
-     cl_platform_id *fplatforms;
-    meta_set_acc(1, metaModePreferOpenCL); //Must be set to OpenCL, don't need a device since we will override
-    meta_get_state_OpenCL(&fplatforms ,&context->device, &context->context, &context->queue);
-    meta_get_state_OpenCL(&fplatforms ,&context->device, &context->context, &context->copy_queue);
-    
-    
-   
+
     // Create program
-    //context->program = clCreateProgramWithSource(context->context, sizeof(ocl_kernels)/sizeof(char*), ocl_kernels, NULL, &err);
-    //check_ocl(err, "Creating program");
+    context->program = clCreateProgramWithSource(context->context, sizeof(ocl_kernels)/sizeof(char*), ocl_kernels, NULL, &err);
+    check_ocl(err, "Creating program");
 
     // Build program
     char *options = "-cl-mad-enable -cl-fast-relaxed-math";
-    __meta_gen_opencl_calc_dd_coeff_custom_args =options;
-    __meta_gen_opencl_calc_denominator_custom_args =options;
-    __meta_gen_opencl_calc_velocity_delta_custom_args =options;
-    __meta_gen_opencl_inner_source_custom_args =options;
-    __meta_gen_opencl_outer_source_custom_args =options;
-    __meta_gen_opencl_reduce_flux_custom_args =options;
-    __meta_gen_opencl_reduce_flux_moments_custom_args =options;
-    __meta_gen_opencl_sweep_plane_custom_args =options;
-    __meta_gen_opencl_zero_buffer_custom_args  =options;
-     meta_register_module(&meta_gen_opencl_metacl_module_registry);
-    /*
     cl_int build_err = clBuildProgram(context->program, 1, &context->device, options, NULL, NULL);
     if (build_err == CL_BUILD_PROGRAM_FAILURE)
     {
@@ -135,13 +115,11 @@ void init_ocl(struct context * context, const bool multigpu, const int rank)
     check_ocl(err, "Creating scalar flux reduction kernel");
     context->kernels.reduce_flux_moments = clCreateKernel(context->program, "reduce_flux_moments", &err);
     check_ocl(err, "Creating scalar flux moments reduction kernel");
-   */
 
 }
 
 void release_context(struct context * context)
 {
-    /*
     cl_int err;
     err = clReleaseProgram(context->program);
     check_ocl(err, "Releasing program");
@@ -156,7 +134,5 @@ void release_context(struct context * context)
 
     err = clReleaseContext(context->context);
     check_ocl(err, "Releasing context");
-    */
-    meta_deregister_module(&meta_gen_opencl_metacl_module_registry);
 
 }
