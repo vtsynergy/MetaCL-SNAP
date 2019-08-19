@@ -1,4 +1,4 @@
 Compile: make COMPILER=GNU
 
-run: make run i=<filename> device=<devicenumber>
+run: make run i=[filename] device=[devicenumber]
 
