@@ -1,6 +1,10 @@
 
 #include "ocl_buffers.h"
-
+extern double ker_launch_over[9];
+extern double ker_exec_time[9];
+extern int ker_call_nums[9];
+extern cl_ulong start_time, end_time;extern size_t return_bytes;
+extern struct timespec start, end;
 
 void check_device_memory_requirements(
     struct problem * problem, struct rankinfo * rankinfo,
@@ -173,14 +177,23 @@ void allocate_buffers(
 
 void zero_buffer(struct context * context, cl_mem buffer, size_t offset, size_t size)
 {
-    cl_int err;
+    cl_int err;cl_event temp2;
+    size_t enq_off[3]={offset,0,0};
     //err = clSetKernelArg(context->kernels.zero_buffer, 0, sizeof(cl_mem), &buffer);
     //check_ocl(err, "Setting buffer zero kernel argument");
     size_t global[3] = {size,1,1};
     size_t local[3] = {0,0,0};
     //err = clEnqueueNDRangeKernel(context->queue,context->kernels.zero_buffer,1, &offset, &size, NULL, 0, NULL, NULL);
-    err = meta_gen_opencl_zero_buffer_zero_buffer(context->queue, global, local, offset,&buffer, 0, NULL);
+    clock_gettime(CLOCK_REALTIME, &start);
+    err = meta_gen_opencl_zero_buffer_zero_buffer(context->queue, global, local, enq_off,&buffer, 0, &temp2);
+    clock_gettime(CLOCK_REALTIME, &end);
+    ker_launch_over[8]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
+    err = clGetEventProfilingInfo(temp2,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);
+    err = clGetEventProfilingInfo(temp2,CL_PROFILING_COMMAND_END,sizeof(cl_ulong), &end_time,&return_bytes);
+    ker_exec_time[8]+=(double)(end_time-start_time)/BILLION;
+    temp2=NULL;
     check_ocl(err, "Enqueueing buffer zero kernel");
+    ker_call_nums[8]++;
 }
 
 void swap_angular_flux_buffers(struct buffers * buffers)

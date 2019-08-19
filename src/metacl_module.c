@@ -4,7 +4,6 @@
 #endif
 #include "metamorph.h"
 #include "metacl_module.h"
-
 extern cl_context meta_context;
 extern cl_command_queue meta_queue;
 extern cl_device_id meta_device;
@@ -410,7 +409,7 @@ void meta_gen_opencl_metacl_module_deinit() {
 \param async whether the kernel should run asynchronously
 \param event returns the cl_event corresponding to the kernel launch if run asynchronously
 */
-cl_int meta_gen_opencl_calc_dd_coeff_calc_dd_coeff(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], cl_double dx, cl_double dy, cl_double dz, cl_mem * eta, cl_mem * xi, cl_mem * dd_i, cl_mem * dd_j, cl_mem * dd_k, int async, cl_event * event) {
+cl_int meta_gen_opencl_calc_dd_coeff_calc_dd_coeff(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], size_t (*meta_offset)[3], cl_double dx, cl_double dy, cl_double dz, cl_mem * eta, cl_mem * xi, cl_mem * dd_i, cl_mem * dd_j, cl_mem * dd_k, int async, cl_event * event) {
   if (meta_gen_opencl_metacl_module_registration == NULL) meta_register_module(&meta_gen_opencl_metacl_module_registry);
   struct __meta_gen_opencl_metacl_module_frame * frame = __meta_gen_opencl_metacl_module_current_frame;
   if (queue != NULL) frame = __meta_gen_opencl_metacl_module_lookup_frame(queue);
@@ -432,7 +431,7 @@ cl_int meta_gen_opencl_calc_dd_coeff_calc_dd_coeff(cl_command_queue queue, size_
   } else {
     grid[0] = (*grid_size)[0] * (nullBlock ? 1 : (*block_size)[0]);
     grid[1] = (*grid_size)[1] * (nullBlock ? 1 : (*block_size)[1]);
-    grid[2] = (nullBlock ? 1 : (*block_size)[2]);
+    grid[2] = (*grid_size)[2] * (nullBlock ? 1 : (*block_size)[2]);
     block[0] = (*block_size)[0];
     block[1] = (*block_size)[1];
     block[2] = (*block_size)[2];
@@ -454,7 +453,7 @@ cl_int meta_gen_opencl_calc_dd_coeff_calc_dd_coeff(cl_command_queue queue, size_
   if (retCode != CL_SUCCESS) fprintf(stderr, "OpenCL kernel argument assignment error (arg: \"dd_j\", host wrapper: \"meta_gen_opencl_calc_dd_coeff_calc_dd_coeff\") %d at %s:%d\n", retCode, __FILE__, __LINE__);
   retCode = clSetKernelArg(frame->calc_dd_coeff_calc_dd_coeff_kernel, 7, sizeof(cl_mem), dd_k);
   if (retCode != CL_SUCCESS) fprintf(stderr, "OpenCL kernel argument assignment error (arg: \"dd_k\", host wrapper: \"meta_gen_opencl_calc_dd_coeff_calc_dd_coeff\") %d at %s:%d\n", retCode, __FILE__, __LINE__);
-  retCode = clEnqueueNDRangeKernel(frame->queue, frame->calc_dd_coeff_calc_dd_coeff_kernel, 3, NULL, grid, (nullBlock ? NULL : block), 0, NULL, event);
+  retCode = clEnqueueNDRangeKernel(frame->queue, frame->calc_dd_coeff_calc_dd_coeff_kernel, 3, meta_offset, grid, (nullBlock ? NULL : block), 0, NULL, event);
   if (retCode != CL_SUCCESS) fprintf(stderr, "OpenCL kernel enqueue error (host wrapper: \"meta_gen_opencl_calc_dd_coeff_calc_dd_coeff\") %d at %s:%d\n", retCode, __FILE__, __LINE__);
   if (!async) {
     retCode = clFinish(frame->queue);
@@ -482,7 +481,7 @@ cl_int meta_gen_opencl_calc_dd_coeff_calc_dd_coeff(cl_command_queue queue, size_
 \param async whether the kernel should run asynchronously
 \param event returns the cl_event corresponding to the kernel launch if run asynchronously
 */
-cl_int meta_gen_opencl_calc_denominator_calc_denominator(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], cl_uint nx, cl_uint ny, cl_uint nz, cl_uint nang, cl_uint ng, cl_mem * mat_cross_section, cl_mem * velocity_delta, cl_mem * mu, cl_mem * dd_i, cl_mem * dd_j, cl_mem * dd_k, cl_mem * denominator, int async, cl_event * event) {
+cl_int meta_gen_opencl_calc_denominator_calc_denominator(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], size_t (*meta_offset)[3], cl_uint nx, cl_uint ny, cl_uint nz, cl_uint nang, cl_uint ng, cl_mem * mat_cross_section, cl_mem * velocity_delta, cl_mem * mu, cl_mem * dd_i, cl_mem * dd_j, cl_mem * dd_k, cl_mem * denominator, int async, cl_event * event) {
   if (meta_gen_opencl_metacl_module_registration == NULL) meta_register_module(&meta_gen_opencl_metacl_module_registry);
   struct __meta_gen_opencl_metacl_module_frame * frame = __meta_gen_opencl_metacl_module_current_frame;
   if (queue != NULL) frame = __meta_gen_opencl_metacl_module_lookup_frame(queue);
@@ -504,7 +503,7 @@ cl_int meta_gen_opencl_calc_denominator_calc_denominator(cl_command_queue queue,
   } else {
     grid[0] = (*grid_size)[0] * (nullBlock ? 1 : (*block_size)[0]);
     grid[1] = (*grid_size)[1] * (nullBlock ? 1 : (*block_size)[1]);
-    grid[2] = (nullBlock ? 1 : (*block_size)[2]);
+    grid[2] = (*grid_size)[2] * (nullBlock ? 1 : (*block_size)[2]);
     block[0] = (*block_size)[0];
     block[1] = (*block_size)[1];
     block[2] = (*block_size)[2];
@@ -534,7 +533,7 @@ cl_int meta_gen_opencl_calc_denominator_calc_denominator(cl_command_queue queue,
   if (retCode != CL_SUCCESS) fprintf(stderr, "OpenCL kernel argument assignment error (arg: \"dd_k\", host wrapper: \"meta_gen_opencl_calc_denominator_calc_denominator\") %d at %s:%d\n", retCode, __FILE__, __LINE__);
   retCode = clSetKernelArg(frame->calc_denominator_calc_denominator_kernel, 11, sizeof(cl_mem), denominator);
   if (retCode != CL_SUCCESS) fprintf(stderr, "OpenCL kernel argument assignment error (arg: \"denominator\", host wrapper: \"meta_gen_opencl_calc_denominator_calc_denominator\") %d at %s:%d\n", retCode, __FILE__, __LINE__);
-  retCode = clEnqueueNDRangeKernel(frame->queue, frame->calc_denominator_calc_denominator_kernel, 3, NULL, grid, (nullBlock ? NULL : block), 0, NULL, event);
+  retCode = clEnqueueNDRangeKernel(frame->queue, frame->calc_denominator_calc_denominator_kernel, 3, meta_offset, grid, (nullBlock ? NULL : block), 0, NULL, event);
   if (retCode != CL_SUCCESS) fprintf(stderr, "OpenCL kernel enqueue error (host wrapper: \"meta_gen_opencl_calc_denominator_calc_denominator\") %d at %s:%d\n", retCode, __FILE__, __LINE__);
   if (!async) {
     retCode = clFinish(frame->queue);
@@ -553,7 +552,7 @@ cl_int meta_gen_opencl_calc_denominator_calc_denominator(cl_command_queue queue,
 \param async whether the kernel should run asynchronously
 \param event returns the cl_event corresponding to the kernel launch if run asynchronously
 */
-cl_int meta_gen_opencl_calc_velocity_delta_calc_velocity_delta(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], cl_mem * velocities, cl_double dt, cl_mem * velocity_delta, int async, cl_event * event) {
+cl_int meta_gen_opencl_calc_velocity_delta_calc_velocity_delta(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], size_t (*meta_offset)[3], cl_mem * velocities, cl_double dt, cl_mem * velocity_delta, int async, cl_event * event) {
   if (meta_gen_opencl_metacl_module_registration == NULL) meta_register_module(&meta_gen_opencl_metacl_module_registry);
   struct __meta_gen_opencl_metacl_module_frame * frame = __meta_gen_opencl_metacl_module_current_frame;
   if (queue != NULL) frame = __meta_gen_opencl_metacl_module_lookup_frame(queue);
@@ -575,7 +574,7 @@ cl_int meta_gen_opencl_calc_velocity_delta_calc_velocity_delta(cl_command_queue 
   } else {
     grid[0] = (*grid_size)[0] * (nullBlock ? 1 : (*block_size)[0]);
     grid[1] = (*grid_size)[1] * (nullBlock ? 1 : (*block_size)[1]);
-    grid[2] = (nullBlock ? 1 : (*block_size)[2]);
+    grid[2] = (*grid_size)[2] * (nullBlock ? 1 : (*block_size)[2]);
     block[0] = (*block_size)[0];
     block[1] = (*block_size)[1];
     block[2] = (*block_size)[2];
@@ -587,7 +586,7 @@ cl_int meta_gen_opencl_calc_velocity_delta_calc_velocity_delta(cl_command_queue 
   if (retCode != CL_SUCCESS) fprintf(stderr, "OpenCL kernel argument assignment error (arg: \"dt\", host wrapper: \"meta_gen_opencl_calc_velocity_delta_calc_velocity_delta\") %d at %s:%d\n", retCode, __FILE__, __LINE__);
   retCode = clSetKernelArg(frame->calc_velocity_delta_calc_velocity_delta_kernel, 2, sizeof(cl_mem), velocity_delta);
   if (retCode != CL_SUCCESS) fprintf(stderr, "OpenCL kernel argument assignment error (arg: \"velocity_delta\", host wrapper: \"meta_gen_opencl_calc_velocity_delta_calc_velocity_delta\") %d at %s:%d\n", retCode, __FILE__, __LINE__);
-  retCode = clEnqueueNDRangeKernel(frame->queue, frame->calc_velocity_delta_calc_velocity_delta_kernel, 3, NULL, grid, (nullBlock ? NULL : block), 0, NULL, event);
+  retCode = clEnqueueNDRangeKernel(frame->queue, frame->calc_velocity_delta_calc_velocity_delta_kernel, 3, meta_offset, grid, (nullBlock ? NULL : block), 0, NULL, event);
   if (retCode != CL_SUCCESS) fprintf(stderr, "OpenCL kernel enqueue error (host wrapper: \"meta_gen_opencl_calc_velocity_delta_calc_velocity_delta\") %d at %s:%d\n", retCode, __FILE__, __LINE__);
   if (!async) {
     retCode = clFinish(frame->queue);
@@ -614,7 +613,7 @@ cl_int meta_gen_opencl_calc_velocity_delta_calc_velocity_delta(cl_command_queue 
 \param async whether the kernel should run asynchronously
 \param event returns the cl_event corresponding to the kernel launch if run asynchronously
 */
-cl_int meta_gen_opencl_inner_source_calc_inner_source(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], cl_uint nx, cl_uint ny, cl_uint nz, cl_uint ng, cl_uint cmom, cl_uint nmom, cl_mem * outer_source, cl_mem * scattering_matrix, cl_mem * scalar_flux, cl_mem * scalar_flux_moments, cl_mem * inner_source, int async, cl_event * event) {
+cl_int meta_gen_opencl_inner_source_calc_inner_source(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], size_t (*meta_offset)[3], cl_uint nx, cl_uint ny, cl_uint nz, cl_uint ng, cl_uint cmom, cl_uint nmom, cl_mem * outer_source, cl_mem * scattering_matrix, cl_mem * scalar_flux, cl_mem * scalar_flux_moments, cl_mem * inner_source, int async, cl_event * event) {
   if (meta_gen_opencl_metacl_module_registration == NULL) meta_register_module(&meta_gen_opencl_metacl_module_registry);
   struct __meta_gen_opencl_metacl_module_frame * frame = __meta_gen_opencl_metacl_module_current_frame;
   if (queue != NULL) frame = __meta_gen_opencl_metacl_module_lookup_frame(queue);
@@ -664,7 +663,7 @@ cl_int meta_gen_opencl_inner_source_calc_inner_source(cl_command_queue queue, si
   if (retCode != CL_SUCCESS) fprintf(stderr, "OpenCL kernel argument assignment error (arg: \"scalar_flux_moments\", host wrapper: \"meta_gen_opencl_inner_source_calc_inner_source\") %d at %s:%d\n", retCode, __FILE__, __LINE__);
   retCode = clSetKernelArg(frame->inner_source_calc_inner_source_kernel, 10, sizeof(cl_mem), inner_source);
   if (retCode != CL_SUCCESS) fprintf(stderr, "OpenCL kernel argument assignment error (arg: \"inner_source\", host wrapper: \"meta_gen_opencl_inner_source_calc_inner_source\") %d at %s:%d\n", retCode, __FILE__, __LINE__);
-  retCode = clEnqueueNDRangeKernel(frame->queue, frame->inner_source_calc_inner_source_kernel, 3, NULL, grid, (nullBlock ? NULL : block), 0, NULL, event);
+  retCode = clEnqueueNDRangeKernel(frame->queue, frame->inner_source_calc_inner_source_kernel, 3, meta_offset, grid, (nullBlock ? NULL : block), 0, NULL, event);
   if (retCode != CL_SUCCESS) fprintf(stderr, "OpenCL kernel enqueue error (host wrapper: \"meta_gen_opencl_inner_source_calc_inner_source\") %d at %s:%d\n", retCode, __FILE__, __LINE__);
   if (!async) {
     retCode = clFinish(frame->queue);
@@ -691,7 +690,7 @@ cl_int meta_gen_opencl_inner_source_calc_inner_source(cl_command_queue queue, si
 \param async whether the kernel should run asynchronously
 \param event returns the cl_event corresponding to the kernel launch if run asynchronously
 */
-cl_int meta_gen_opencl_outer_source_calc_outer_source(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], cl_uint nx, cl_uint ny, cl_uint nz, cl_uint ng, cl_uint cmom, cl_uint nmom, cl_mem * fixed_source, cl_mem * scattering_matrix, cl_mem * scalar_flux, cl_mem * scalar_flux_moments, cl_mem * outer_source, int async, cl_event * event) {
+cl_int meta_gen_opencl_outer_source_calc_outer_source(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], size_t (*meta_offset)[3], cl_uint nx, cl_uint ny, cl_uint nz, cl_uint ng, cl_uint cmom, cl_uint nmom, cl_mem * fixed_source, cl_mem * scattering_matrix, cl_mem * scalar_flux, cl_mem * scalar_flux_moments, cl_mem * outer_source, int async, cl_event * event) {
   if (meta_gen_opencl_metacl_module_registration == NULL) meta_register_module(&meta_gen_opencl_metacl_module_registry);
   struct __meta_gen_opencl_metacl_module_frame * frame = __meta_gen_opencl_metacl_module_current_frame;
   if (queue != NULL) frame = __meta_gen_opencl_metacl_module_lookup_frame(queue);
@@ -741,7 +740,7 @@ cl_int meta_gen_opencl_outer_source_calc_outer_source(cl_command_queue queue, si
   if (retCode != CL_SUCCESS) fprintf(stderr, "OpenCL kernel argument assignment error (arg: \"scalar_flux_moments\", host wrapper: \"meta_gen_opencl_outer_source_calc_outer_source\") %d at %s:%d\n", retCode, __FILE__, __LINE__);
   retCode = clSetKernelArg(frame->outer_source_calc_outer_source_kernel, 10, sizeof(cl_mem), outer_source);
   if (retCode != CL_SUCCESS) fprintf(stderr, "OpenCL kernel argument assignment error (arg: \"outer_source\", host wrapper: \"meta_gen_opencl_outer_source_calc_outer_source\") %d at %s:%d\n", retCode, __FILE__, __LINE__);
-  retCode = clEnqueueNDRangeKernel(frame->queue, frame->outer_source_calc_outer_source_kernel, 3, NULL, grid, (nullBlock ? NULL : block), 0, NULL, event);
+  retCode = clEnqueueNDRangeKernel(frame->queue, frame->outer_source_calc_outer_source_kernel, 3, meta_offset, grid, (nullBlock ? NULL : block), 0, NULL, event);
   if (retCode != CL_SUCCESS) fprintf(stderr, "OpenCL kernel enqueue error (host wrapper: \"meta_gen_opencl_outer_source_calc_outer_source\") %d at %s:%d\n", retCode, __FILE__, __LINE__);
   if (!async) {
     retCode = clFinish(frame->queue);
@@ -782,7 +781,7 @@ cl_int meta_gen_opencl_outer_source_calc_outer_source(cl_command_queue queue, si
 \param async whether the kernel should run asynchronously
 \param event returns the cl_event corresponding to the kernel launch if run asynchronously
 */
-cl_int meta_gen_opencl_reduce_flux_reduce_flux(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], cl_uint nx, cl_uint ny, cl_uint nz, cl_uint nang, cl_uint ng, cl_mem * angular_flux_in_0, cl_mem * angular_flux_in_1, cl_mem * angular_flux_in_2, cl_mem * angular_flux_in_3, cl_mem * angular_flux_in_4, cl_mem * angular_flux_in_5, cl_mem * angular_flux_in_6, cl_mem * angular_flux_in_7, cl_mem * angular_flux_out_0, cl_mem * angular_flux_out_1, cl_mem * angular_flux_out_2, cl_mem * angular_flux_out_3, cl_mem * angular_flux_out_4, cl_mem * angular_flux_out_5, cl_mem * angular_flux_out_6, cl_mem * angular_flux_out_7, cl_mem * velocity_delta, cl_mem * quad_weights, cl_mem * scalar_flux, size_t local_scalar_num_local_elems, int async, cl_event * event) {
+cl_int meta_gen_opencl_reduce_flux_reduce_flux(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], size_t (*meta_offset)[3], cl_uint nx, cl_uint ny, cl_uint nz, cl_uint nang, cl_uint ng, cl_mem * angular_flux_in_0, cl_mem * angular_flux_in_1, cl_mem * angular_flux_in_2, cl_mem * angular_flux_in_3, cl_mem * angular_flux_in_4, cl_mem * angular_flux_in_5, cl_mem * angular_flux_in_6, cl_mem * angular_flux_in_7, cl_mem * angular_flux_out_0, cl_mem * angular_flux_out_1, cl_mem * angular_flux_out_2, cl_mem * angular_flux_out_3, cl_mem * angular_flux_out_4, cl_mem * angular_flux_out_5, cl_mem * angular_flux_out_6, cl_mem * angular_flux_out_7, cl_mem * velocity_delta, cl_mem * quad_weights, cl_mem * scalar_flux, size_t local_scalar_num_local_elems, int async, cl_event * event) {
   if (meta_gen_opencl_metacl_module_registration == NULL) meta_register_module(&meta_gen_opencl_metacl_module_registry);
   struct __meta_gen_opencl_metacl_module_frame * frame = __meta_gen_opencl_metacl_module_current_frame;
   if (queue != NULL) frame = __meta_gen_opencl_metacl_module_lookup_frame(queue);
@@ -804,7 +803,7 @@ cl_int meta_gen_opencl_reduce_flux_reduce_flux(cl_command_queue queue, size_t (*
   } else {
     grid[0] = (*grid_size)[0] * (nullBlock ? 1 : (*block_size)[0]);
     grid[1] = (*grid_size)[1] * (nullBlock ? 1 : (*block_size)[1]);
-    grid[2] = (nullBlock ? 1 : (*block_size)[2]);
+    grid[2] = (*grid_size)[2] * (nullBlock ? 1 : (*block_size)[2]);
     block[0] = (*block_size)[0];
     block[1] = (*block_size)[1];
     block[2] = (*block_size)[2];
@@ -860,7 +859,7 @@ cl_int meta_gen_opencl_reduce_flux_reduce_flux(cl_command_queue queue, size_t (*
   if (retCode != CL_SUCCESS) fprintf(stderr, "OpenCL kernel argument assignment error (arg: \"scalar_flux\", host wrapper: \"meta_gen_opencl_reduce_flux_reduce_flux\") %d at %s:%d\n", retCode, __FILE__, __LINE__);
   retCode = clSetKernelArg(frame->reduce_flux_reduce_flux_kernel, 24, sizeof(cl_double) * local_scalar_num_local_elems, NULL);
   if (retCode != CL_SUCCESS) fprintf(stderr, "OpenCL kernel argument assignment error (arg: \"local_scalar\", host wrapper: \"meta_gen_opencl_reduce_flux_reduce_flux\") %d at %s:%d\n", retCode, __FILE__, __LINE__);
-  retCode = clEnqueueNDRangeKernel(frame->queue, frame->reduce_flux_reduce_flux_kernel, 3, NULL, grid, (nullBlock ? NULL : block), 0, NULL, event);
+  retCode = clEnqueueNDRangeKernel(frame->queue, frame->reduce_flux_reduce_flux_kernel, 3, meta_offset, grid, (nullBlock ? NULL : block), 0, NULL, event);
   if (retCode != CL_SUCCESS) fprintf(stderr, "OpenCL kernel enqueue error (host wrapper: \"meta_gen_opencl_reduce_flux_reduce_flux\") %d at %s:%d\n", retCode, __FILE__, __LINE__);
   if (!async) {
     retCode = clFinish(frame->queue);
@@ -903,7 +902,7 @@ cl_int meta_gen_opencl_reduce_flux_reduce_flux(cl_command_queue queue, size_t (*
 \param async whether the kernel should run asynchronously
 \param event returns the cl_event corresponding to the kernel launch if run asynchronously
 */
-cl_int meta_gen_opencl_reduce_flux_moments_reduce_flux_moments(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], cl_uint nx, cl_uint ny, cl_uint nz, cl_uint nang, cl_uint ng, cl_uint cmom, cl_mem * angular_flux_in_0, cl_mem * angular_flux_in_1, cl_mem * angular_flux_in_2, cl_mem * angular_flux_in_3, cl_mem * angular_flux_in_4, cl_mem * angular_flux_in_5, cl_mem * angular_flux_in_6, cl_mem * angular_flux_in_7, cl_mem * angular_flux_out_0, cl_mem * angular_flux_out_1, cl_mem * angular_flux_out_2, cl_mem * angular_flux_out_3, cl_mem * angular_flux_out_4, cl_mem * angular_flux_out_5, cl_mem * angular_flux_out_6, cl_mem * angular_flux_out_7, cl_mem * velocity_delta, cl_mem * quad_weights, cl_mem * scat_coeff, cl_mem * scalar_flux_moments, size_t local_scalar_num_local_elems, int async, cl_event * event) {
+cl_int meta_gen_opencl_reduce_flux_moments_reduce_flux_moments(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], size_t (*meta_offset)[3], cl_uint nx, cl_uint ny, cl_uint nz, cl_uint nang, cl_uint ng, cl_uint cmom, cl_mem * angular_flux_in_0, cl_mem * angular_flux_in_1, cl_mem * angular_flux_in_2, cl_mem * angular_flux_in_3, cl_mem * angular_flux_in_4, cl_mem * angular_flux_in_5, cl_mem * angular_flux_in_6, cl_mem * angular_flux_in_7, cl_mem * angular_flux_out_0, cl_mem * angular_flux_out_1, cl_mem * angular_flux_out_2, cl_mem * angular_flux_out_3, cl_mem * angular_flux_out_4, cl_mem * angular_flux_out_5, cl_mem * angular_flux_out_6, cl_mem * angular_flux_out_7, cl_mem * velocity_delta, cl_mem * quad_weights, cl_mem * scat_coeff, cl_mem * scalar_flux_moments, size_t local_scalar_num_local_elems, int async, cl_event * event) {
   if (meta_gen_opencl_metacl_module_registration == NULL) meta_register_module(&meta_gen_opencl_metacl_module_registry);
   struct __meta_gen_opencl_metacl_module_frame * frame = __meta_gen_opencl_metacl_module_current_frame;
   if (queue != NULL) frame = __meta_gen_opencl_metacl_module_lookup_frame(queue);
@@ -925,7 +924,7 @@ cl_int meta_gen_opencl_reduce_flux_moments_reduce_flux_moments(cl_command_queue 
   } else {
     grid[0] = (*grid_size)[0] * (nullBlock ? 1 : (*block_size)[0]);
     grid[1] = (*grid_size)[1] * (nullBlock ? 1 : (*block_size)[1]);
-    grid[2] = (nullBlock ? 1 : (*block_size)[2]);
+    grid[2] = (*grid_size)[2] * (nullBlock ? 1 : (*block_size)[2]);
     block[0] = (*block_size)[0];
     block[1] = (*block_size)[1];
     block[2] = (*block_size)[2];
@@ -985,7 +984,7 @@ cl_int meta_gen_opencl_reduce_flux_moments_reduce_flux_moments(cl_command_queue 
   if (retCode != CL_SUCCESS) fprintf(stderr, "OpenCL kernel argument assignment error (arg: \"scalar_flux_moments\", host wrapper: \"meta_gen_opencl_reduce_flux_moments_reduce_flux_moments\") %d at %s:%d\n", retCode, __FILE__, __LINE__);
   retCode = clSetKernelArg(frame->reduce_flux_moments_reduce_flux_moments_kernel, 26, sizeof(cl_double) * local_scalar_num_local_elems, NULL);
   if (retCode != CL_SUCCESS) fprintf(stderr, "OpenCL kernel argument assignment error (arg: \"local_scalar\", host wrapper: \"meta_gen_opencl_reduce_flux_moments_reduce_flux_moments\") %d at %s:%d\n", retCode, __FILE__, __LINE__);
-  retCode = clEnqueueNDRangeKernel(frame->queue, frame->reduce_flux_moments_reduce_flux_moments_kernel, 3, NULL, grid, (nullBlock ? NULL : block), 0, NULL, event);
+  retCode = clEnqueueNDRangeKernel(frame->queue, frame->reduce_flux_moments_reduce_flux_moments_kernel, 3, meta_offset, grid, (nullBlock ? NULL : block), 0, NULL, event);
   if (retCode != CL_SUCCESS) fprintf(stderr, "OpenCL kernel enqueue error (host wrapper: \"meta_gen_opencl_reduce_flux_moments_reduce_flux_moments\") %d at %s:%d\n", retCode, __FILE__, __LINE__);
   if (!async) {
     retCode = clFinish(frame->queue);
@@ -1027,7 +1026,7 @@ cl_int meta_gen_opencl_reduce_flux_moments_reduce_flux_moments(cl_command_queue 
 \param async whether the kernel should run asynchronously
 \param event returns the cl_event corresponding to the kernel launch if run asynchronously
 */
-cl_int meta_gen_opencl_sweep_plane_sweep_plane(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], cl_uint nx, cl_uint ny, cl_uint nz, cl_uint nang, cl_uint ng, cl_uint cmom, cl_int istep, cl_int jstep, cl_int kstep, cl_uint oct, cl_uint z_pos, cl_mem * plane, cl_mem * source, cl_mem * scat_coeff, cl_mem * dd_i, cl_mem * dd_j, cl_mem * dd_k, cl_mem * mu, cl_mem * velocity_delta, cl_mem * mat_cross_section, cl_mem * denominator, cl_mem * angular_flux_in, cl_mem * flux_i, cl_mem * flux_j, cl_mem * flux_k, cl_mem * angular_flux_out, int async, cl_event * event) {
+cl_int meta_gen_opencl_sweep_plane_sweep_plane(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], size_t (*meta_offset)[3], cl_uint nx, cl_uint ny, cl_uint nz, cl_uint nang, cl_uint ng, cl_uint cmom, cl_int istep, cl_int jstep, cl_int kstep, cl_uint oct, cl_uint z_pos, cl_mem * plane, cl_mem * source, cl_mem * scat_coeff, cl_mem * dd_i, cl_mem * dd_j, cl_mem * dd_k, cl_mem * mu, cl_mem * velocity_delta, cl_mem * mat_cross_section, cl_mem * denominator, cl_mem * angular_flux_in, cl_mem * flux_i, cl_mem * flux_j, cl_mem * flux_k, cl_mem * angular_flux_out, int async, cl_event * event) {
   if (meta_gen_opencl_metacl_module_registration == NULL) meta_register_module(&meta_gen_opencl_metacl_module_registry);
   struct __meta_gen_opencl_metacl_module_frame * frame = __meta_gen_opencl_metacl_module_current_frame;
   if (queue != NULL) frame = __meta_gen_opencl_metacl_module_lookup_frame(queue);
@@ -1049,7 +1048,7 @@ cl_int meta_gen_opencl_sweep_plane_sweep_plane(cl_command_queue queue, size_t (*
   } else {
     grid[0] = (*grid_size)[0] * (nullBlock ? 1 : (*block_size)[0]);
     grid[1] = (*grid_size)[1] * (nullBlock ? 1 : (*block_size)[1]);
-    grid[2] = (nullBlock ? 1 : (*block_size)[2]);
+    grid[2] = (*grid_size)[2] * (nullBlock ? 1 : (*block_size)[2]);
     block[0] = (*block_size)[0];
     block[1] = (*block_size)[1];
     block[2] = (*block_size)[2];
@@ -1107,7 +1106,7 @@ cl_int meta_gen_opencl_sweep_plane_sweep_plane(cl_command_queue queue, size_t (*
   if (retCode != CL_SUCCESS) fprintf(stderr, "OpenCL kernel argument assignment error (arg: \"flux_k\", host wrapper: \"meta_gen_opencl_sweep_plane_sweep_plane\") %d at %s:%d\n", retCode, __FILE__, __LINE__);
   retCode = clSetKernelArg(frame->sweep_plane_sweep_plane_kernel, 25, sizeof(cl_mem), angular_flux_out);
   if (retCode != CL_SUCCESS) fprintf(stderr, "OpenCL kernel argument assignment error (arg: \"angular_flux_out\", host wrapper: \"meta_gen_opencl_sweep_plane_sweep_plane\") %d at %s:%d\n", retCode, __FILE__, __LINE__);
-  retCode = clEnqueueNDRangeKernel(frame->queue, frame->sweep_plane_sweep_plane_kernel, 3, NULL, grid, (nullBlock ? NULL : block), 0, NULL, event);
+  retCode = clEnqueueNDRangeKernel(frame->queue, frame->sweep_plane_sweep_plane_kernel, 3, meta_offset, grid, (nullBlock ? NULL : block), 0, NULL, event);
   if (retCode != CL_SUCCESS) fprintf(stderr, "OpenCL kernel enqueue error (host wrapper: \"meta_gen_opencl_sweep_plane_sweep_plane\") %d at %s:%d\n", retCode, __FILE__, __LINE__);
   if (!async) {
     retCode = clFinish(frame->queue);
@@ -1124,7 +1123,7 @@ cl_int meta_gen_opencl_sweep_plane_sweep_plane(cl_command_queue queue, size_t (*
 \param async whether the kernel should run asynchronously
 \param event returns the cl_event corresponding to the kernel launch if run asynchronously
 */
-cl_int meta_gen_opencl_zero_buffer_zero_buffer(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], size_t offset[3], cl_mem * buffer, int async, cl_event * event) {
+cl_int meta_gen_opencl_zero_buffer_zero_buffer(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], size_t (*meta_offset)[3], cl_mem * buffer, int async, cl_event * event) {
   if (meta_gen_opencl_metacl_module_registration == NULL) meta_register_module(&meta_gen_opencl_metacl_module_registry);
   struct __meta_gen_opencl_metacl_module_frame * frame = __meta_gen_opencl_metacl_module_current_frame;
   if (queue != NULL) frame = __meta_gen_opencl_metacl_module_lookup_frame(queue);
@@ -1146,7 +1145,7 @@ cl_int meta_gen_opencl_zero_buffer_zero_buffer(cl_command_queue queue, size_t (*
   } else {
     grid[0] = (*grid_size)[0] * (nullBlock ? 1 : (*block_size)[0]);
     grid[1] = (*grid_size)[1] * (nullBlock ? 1 : (*block_size)[1]);
-    grid[2] = (nullBlock ? 1 : (*block_size)[2]);
+    grid[2] = (*grid_size)[2] * (nullBlock ? 1 : (*block_size)[2]);
     block[0] = (*block_size)[0];
     block[1] = (*block_size)[1];
     block[2] = (*block_size)[2];
@@ -1154,7 +1153,7 @@ cl_int meta_gen_opencl_zero_buffer_zero_buffer(cl_command_queue queue, size_t (*
   }
   retCode = clSetKernelArg(frame->zero_buffer_zero_buffer_kernel, 0, sizeof(cl_mem), buffer);
   if (retCode != CL_SUCCESS) fprintf(stderr, "OpenCL kernel argument assignment error (arg: \"buffer\", host wrapper: \"meta_gen_opencl_zero_buffer_zero_buffer\") %d at %s:%d\n", retCode, __FILE__, __LINE__);
-  retCode = clEnqueueNDRangeKernel(frame->queue, frame->zero_buffer_zero_buffer_kernel, 3, &offset, grid, (nullBlock ? NULL : block), 0, NULL, event);
+  retCode = clEnqueueNDRangeKernel(frame->queue, frame->zero_buffer_zero_buffer_kernel, 3, meta_offset, grid, (nullBlock ? NULL : block), 0, NULL, event);
   if (retCode != CL_SUCCESS) fprintf(stderr, "OpenCL kernel enqueue error (host wrapper: \"meta_gen_opencl_zero_buffer_zero_buffer\") %d at %s:%d\n", retCode, __FILE__, __LINE__);
   if (!async) {
     retCode = clFinish(frame->queue);

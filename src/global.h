@@ -6,11 +6,13 @@
 */
 
 #include <stdbool.h>
-
+#include <time.h>
 /** \brief Problem dimensions
 *
 * Read in from input file or calculated from those inputs
 */
+#define BILLION 1E9
+
 struct problem
 {
     /**@{ \brief Global grid size */

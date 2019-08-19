@@ -5,7 +5,7 @@
 #include "metamorph.h"
 #include "metacl_module.h"
 #define MAX_DEVICES 16
-
+extern int deviceIndex;
 void check_ocl_error(const cl_int err, const char *msg, const int line, const char * file)
 {
     if (err != CL_SUCCESS)
@@ -79,7 +79,7 @@ void init_ocl(struct context * context, const bool multigpu, const int rank)
     }
     */
      cl_platform_id *fplatforms;
-    meta_set_acc(1, metaModePreferOpenCL); //Must be set to OpenCL, don't need a device since we will override
+    meta_set_acc(deviceIndex, metaModePreferOpenCL); //Must be set to OpenCL, don't need a device since we will override
     meta_get_state_OpenCL(&fplatforms ,&context->device, &context->context, &context->queue);
     meta_get_state_OpenCL(&fplatforms ,&context->device, &context->context, &context->copy_queue);
     
