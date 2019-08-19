@@ -19,10 +19,15 @@
 
 #include "ocl_global.h"
 #include "ocl_buffers.h"
-
 double sweep_mpi_time = 0.0;
 double sweep_mpi_recv_time = 0.0;
-
+double ker_launch_over[9]={0,0,0,0,0,0,0,0,0};
+double ker_exec_time[9]={0,0,0,0,0,0,0,0,0};
+int ker_call_nums[9]={0,0,0,0,0,0,0,0,0};
+size_t null_offset[3]={0,0,0};
+int deviceIndex;
+cl_ulong start_time, end_time; size_t return_bytes;
+struct timespec start, end;
 /** \mainpage
 * SNAP-MPI is a cut down version of the SNAP mini-app which allows us to
 * investigate MPI decomposition schemes with OpenCL for node-level computation.
@@ -48,6 +53,12 @@ void print_timing_report(struct timers * timers, struct problem * problem, unsig
 /** \brief Main function, contains iteration loops */
 int main(int argc, char **argv)
 {
+    
+    if(argc>2){
+  	char *c =argv[2];
+  	deviceIndex= atoi(c);
+  	printf("device number entered is %d\n", deviceIndex);
+    }
     int mpi_err = MPI_Init(&argc, &argv);
     check_mpi(mpi_err, "MPI_Init");
 
@@ -71,7 +82,7 @@ int main(int argc, char **argv)
         print_banner();
 
         // Check for two files on CLI
-        if (argc != 2)
+        if (argc  < 2  )
         {
             fprintf(stderr, "Usage: ./snap snap.in\n");
             exit(EXIT_FAILURE);
@@ -167,6 +178,8 @@ int main(int argc, char **argv)
     //----------------------------------------------
     for (unsigned int t = 0; t < problem.nsteps; t++)
     {
+        unsigned int outer_iterations = 0;
+        unsigned int inner_iterations = 0;
         if (rankinfo.rank == 0)
         {
             printf(" Timestep %d\n", t);
@@ -177,6 +190,8 @@ int main(int argc, char **argv)
         zero_buffer(&context, buffers.scalar_flux, 0, problem.ng*rankinfo.nx*rankinfo.ny*rankinfo.nz);
         if (problem.cmom-1 > 0)
             zero_buffer(&context, buffers.scalar_flux_moments, 0, (problem.cmom-1)*problem.ng*rankinfo.nx*rankinfo.ny*rankinfo.nz);
+        clerr = clFinish(context.queue);
+        check_ocl(clerr, "Force clFinish");
 
         // Swap angluar flux pointers (not for the first timestep)
         if (t > 0)
@@ -199,6 +214,7 @@ int main(int argc, char **argv)
             //----------------------------------------------
             // Inners
             //----------------------------------------------
+            inner_iterations += problem.ng;
             unsigned int i;
             for (i = 0; i < problem.iitm; i++)
             {
@@ -277,8 +293,9 @@ int main(int argc, char **argv)
 
                 double conv_tick = wtime();
 
-                innerdone = inner_convergence(&problem, &rankinfo, &memory);
-
+                int inners_left = inner_convergence(&problem, &rankinfo, &memory);
+                innerdone = inners_left?false:true;
+                inner_iterations += inners_left;
                 if (profiling && rankinfo.rank == 0)
                     timers.convergence_time += wtime() - conv_tick;
 
@@ -291,7 +308,6 @@ int main(int argc, char **argv)
                     i += 1;
                     break;
                 }
-
             }
             //----------------------------------------------
             // End of Inners
@@ -307,9 +323,10 @@ int main(int argc, char **argv)
                 timers.convergence_time += wtime() - conv_tick;
 
             total_iterations += i;
+            outer_iterations++;
 
             if (rankinfo.rank == 0)
-                printf("     %-9u %-15lf %-10u\n", o, max_outer_diff, i);
+                printf("     %-9u %-15.4e %-10u\n", o, max_outer_diff, i);
 
             // Do any profiler updates for timings
             if (rankinfo.rank == 0)
@@ -329,6 +346,14 @@ int main(int argc, char **argv)
             if (rankinfo.rank == 0)
                 printf(" * Stopping because not converged *\n");
             break;
+        }
+
+        // Print loop statistics for comparison purposes
+        if (rankinfo.rank == 0)
+        {
+            printf("\n");
+            printf("  Timestep= %4d   No. Outers= %4d    No. Inners= %4d\n"
+                   ,t,outer_iterations,inner_iterations);
         }
 
         // Calculate particle population and print out the value
@@ -366,6 +391,15 @@ int main(int argc, char **argv)
 
     release_context(&context);
     finish_comms();
+     printf("Kernel: Outer, NDRange time: %lf, Event Based Time: %lf, Launch Overhead: %lf, #Times called %d\n",ker_launch_over[0],ker_exec_time[0],ker_launch_over[0]-ker_exec_time[0],ker_call_nums[0]);
+     printf("Kernel: Inner, NDRange time: %lf, Event Based Time: %lf, Launch Overhead: %lf, #Times called %d\n",ker_launch_over[1],ker_exec_time[1],ker_launch_over[1]-ker_exec_time[1],ker_call_nums[1]);
+     printf("Kernel: Velocity_delta, NDRange time: %lf, Event Based Time: %lf, Launch Overhead: %lf, #Times called %d\n",ker_launch_over[2],ker_exec_time[2],ker_launch_over[2]-ker_exec_time[2],ker_call_nums[2]);
+     printf("Kernel: DD_Coeff, NDRange time: %lf, Event Based Time: %lf, Launch Overhead: %lf, #Times called %d\n",ker_launch_over[3],ker_exec_time[3],ker_launch_over[3]-ker_exec_time[3],ker_call_nums[3]);
+     printf("Kernel: Denominator, NDRange time: %lf, Event Based Time: %lf, Launch Overhead: %lf, #Times called %d\n",ker_launch_over[4],ker_exec_time[4],ker_launch_over[4]-ker_exec_time[4],ker_call_nums[4]);
+     printf("Kernel: Scalar_flux, NDRange time: %lf, Event Based Time: %lf, Launch Overhead: %lf, #Times called %d\n",ker_launch_over[5],ker_exec_time[5],ker_launch_over[5]-ker_exec_time[5],ker_call_nums[5]);
+     printf("Kernel: Scalar_flux_moment, NDRange time: %lf, Event Based Time: %lf, Launch Overhead: %lf, #Times called %d\n",ker_launch_over[6],ker_exec_time[6],ker_launch_over[6]-ker_exec_time[6],ker_call_nums[6]);
+     printf("Kernel: Sweep, NDRange time: %lf, Event Based Time: %lf, Launch Overhead: %lf, #Times called %d\n",ker_launch_over[7],ker_exec_time[7],ker_launch_over[7]-ker_exec_time[7],ker_call_nums[7]);
+     printf("Kernel: Zero_buffer, NDRange time: %lf, Event Based Time: %lf, Launch Overhead: %lf, #Times called %d\n",ker_launch_over[8],ker_exec_time[8],ker_launch_over[8]-ker_exec_time[8],ker_call_nums[8]);
 
     return EXIT_SUCCESS;
 }

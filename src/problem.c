@@ -1,7 +1,12 @@
 
 #include "problem.h"
 #include <math.h>
-
+extern double ker_launch_over[9];
+extern double ker_exec_time[9];
+extern int ker_call_nums[9];
+extern cl_ulong start_time, end_time;extern size_t return_bytes;
+extern struct timespec start, end;
+extern size_t null_offset[3];
 void init_quadrature_weights(
     const struct problem * problem,
     const struct context * context,
@@ -274,9 +279,15 @@ void init_velocity_delta(
         0, NULL, &velocity_delta_event);
     */
     size_t global[3] = {problem->ng,1,1};
-    size_t local[3] = {0,0,0};
-    err = meta_gen_opencl_calc_velocity_delta_calc_velocity_delta(context->queue, global, local, &buffers->velocities, problem->dt, &buffers->velocity_delta, 0, &velocity_delta_event);
+    size_t local[3] = {0,0,0};clock_gettime(CLOCK_REALTIME, &start);
+    err = meta_gen_opencl_calc_velocity_delta_calc_velocity_delta(context->queue, global, local, null_offset,&buffers->velocities, problem->dt, &buffers->velocity_delta, 0, &velocity_delta_event);
+    clock_gettime(CLOCK_REALTIME, &end);
+    ker_launch_over[2]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
+    err = clGetEventProfilingInfo(velocity_delta_event,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);
+    err = clGetEventProfilingInfo(velocity_delta_event,CL_PROFILING_COMMAND_END,sizeof(cl_ulong), &end_time,&return_bytes);
+    ker_exec_time[2]+=(double)(end_time-start_time)/BILLION;
     check_ocl(err, "Enqueue velocity delta calculation kernel");
+    ker_call_nums[2]++;
     
 }
 
@@ -287,7 +298,7 @@ void calculate_dd_coefficients(
     )
 {
     // We do this on the device because SNAP does it every outer
-    cl_int err;
+    cl_int err;cl_event temp3;
     /*
     err = clSetKernelArg(context->kernels.calc_dd_coeff, 0, sizeof(double), &problem->dx);
     err |= clSetKernelArg(context->kernels.calc_dd_coeff, 1, sizeof(double), &problem->dy);
@@ -306,9 +317,16 @@ void calculate_dd_coefficients(
         0, NULL, NULL);
     */
     size_t global[3] = {problem->nang,1,1};
-    size_t local[3] = {0,0,0};
-    err= meta_gen_opencl_calc_dd_coeff_calc_dd_coeff(context->queue, global, local, problem->dx, problem->dy, problem->dz, &buffers->eta, &buffers->xi, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k, 0, NULL);
+    size_t local[3] = {0,0,0};clock_gettime(CLOCK_REALTIME, &start);
+    err= meta_gen_opencl_calc_dd_coeff_calc_dd_coeff(context->queue, global, local,null_offset, problem->dx, problem->dy, problem->dz, &buffers->eta, &buffers->xi, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k, 0, &temp3);
+    clock_gettime(CLOCK_REALTIME, &end);
+    ker_launch_over[3]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
+    err = clGetEventProfilingInfo(temp3,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);
+    err = clGetEventProfilingInfo(temp3,CL_PROFILING_COMMAND_END,sizeof(cl_ulong), &end_time,&return_bytes);
+    ker_exec_time[3]+=(double)(end_time-start_time)/BILLION;
     check_ocl(err, "Enqueue diamond difference calculation kernel");
+    temp3=NULL;
+    ker_call_nums[3]++;
 }
 
 void calculate_denominator(
@@ -343,7 +361,13 @@ void calculate_denominator(
         0, NULL, &denominator_event);
    */
     size_t global[3] = {problem->nang, problem->ng,1};
-    size_t local[3] ={0,0,0};
-    err= meta_gen_opencl_calc_denominator_calc_denominator(context->queue, global, local, rankinfo->nx, rankinfo->ny, rankinfo->nz, problem->nang, problem->ng, &buffers->mat_cross_section, &buffers->velocity_delta, &buffers->mu, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k, &buffers->denominator, 0, &denominator_event);
+    size_t local[3] ={0,0,0};clock_gettime(CLOCK_REALTIME, &start);
+    err= meta_gen_opencl_calc_denominator_calc_denominator(context->queue, global, local, null_offset,rankinfo->nx, rankinfo->ny, rankinfo->nz, problem->nang, problem->ng, &buffers->mat_cross_section, &buffers->velocity_delta, &buffers->mu, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k, &buffers->denominator, 0, &denominator_event);
+    clock_gettime(CLOCK_REALTIME, &end);
+    ker_launch_over[4]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
+    err = clGetEventProfilingInfo(denominator_event,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);
+    err = clGetEventProfilingInfo(denominator_event,CL_PROFILING_COMMAND_END,sizeof(cl_ulong), &end_time,&return_bytes);
+    ker_exec_time[4]+=(double)(end_time-start_time)/BILLION;
     check_ocl(err, "Enqueue denominator kernel");
+    ker_call_nums[4]++;
 }
