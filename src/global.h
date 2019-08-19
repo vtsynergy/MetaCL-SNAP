@@ -6,11 +6,19 @@
 */
 
 #include <stdbool.h>
-
+#include <time.h>
+#include <CL/cl.h>
+extern double ker_launch_over[9];
+extern double ker_exec_time[9];
+extern int ker_call_nums[9];
+extern cl_ulong start_time, end_time;extern size_t return_bytes;
+extern struct timespec start, end;
 /** \brief Problem dimensions
 *
 * Read in from input file or calculated from those inputs
 */
+#define BILLION 1E9
+
 struct problem
 {
     /**@{ \brief Global grid size */
