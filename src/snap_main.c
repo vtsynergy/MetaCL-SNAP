@@ -36,7 +36,7 @@ struct timespec start, end;
 
 /** \brief Print out starting information */
 void print_banner(void);
-
+void print_res(void);
 /** \brief Print out the input paramters */
 void print_input(struct problem * problem);
 
@@ -191,7 +191,7 @@ int main(int argc, char **argv)
             zero_buffer(&context, buffers.scalar_flux_moments, 0, (problem.cmom-1)*problem.ng*rankinfo.nx*rankinfo.ny*rankinfo.nz);
         clerr = clFinish(context.queue);
         check_ocl(clerr, "Force clFinish");
-
+  	
         // Swap angluar flux pointers (not for the first timestep)
         if (t > 0)
             swap_angular_flux_buffers(&buffers);
@@ -199,6 +199,7 @@ int main(int argc, char **argv)
         //----------------------------------------------
         // Outers
         //----------------------------------------------
+	print_res();
         for (unsigned int o = 0; o < problem.oitm; o++)
         {
             init_velocity_delta(&problem, &context, &buffers);
@@ -333,8 +334,9 @@ int main(int argc, char **argv)
 
             if (outerdone)
                 break;
-
+	print_res();
         }
+	
         //----------------------------------------------
         // End of Outers
         //----------------------------------------------
@@ -390,6 +392,7 @@ int main(int argc, char **argv)
 
     release_context(&context);
     finish_comms();
+     /*
      printf("Kernel: Outer, NDRange time: %lf, Event Based Time: %lf, Launch Overhead: %lf, #Times called %d\n",ker_launch_over[0],ker_exec_time[0],ker_launch_over[0]-ker_exec_time[0],ker_call_nums[0]);
      printf("Kernel: Inner, NDRange time: %lf, Event Based Time: %lf, Launch Overhead: %lf, #Times called %d\n",ker_launch_over[1],ker_exec_time[1],ker_launch_over[1]-ker_exec_time[1],ker_call_nums[1]);
      printf("Kernel: Velocity_delta, NDRange time: %lf, Event Based Time: %lf, Launch Overhead: %lf, #Times called %d\n",ker_launch_over[2],ker_exec_time[2],ker_launch_over[2]-ker_exec_time[2],ker_call_nums[2]);
@@ -399,8 +402,29 @@ int main(int argc, char **argv)
      printf("Kernel: Scalar_flux_moment, NDRange time: %lf, Event Based Time: %lf, Launch Overhead: %lf, #Times called %d\n",ker_launch_over[6],ker_exec_time[6],ker_launch_over[6]-ker_exec_time[6],ker_call_nums[6]);
      printf("Kernel: Sweep, NDRange time: %lf, Event Based Time: %lf, Launch Overhead: %lf, #Times called %d\n",ker_launch_over[7],ker_exec_time[7],ker_launch_over[7]-ker_exec_time[7],ker_call_nums[7]);
      printf("Kernel: Zero_buffer, NDRange time: %lf, Event Based Time: %lf, Launch Overhead: %lf, #Times called %d\n",ker_launch_over[8],ker_exec_time[8],ker_launch_over[8]-ker_exec_time[8],ker_call_nums[8]);
-
+	*/
     return EXIT_SUCCESS;
+}
+
+void print_res(){
+	printf("Kernel_Outer_NDRange_time: %lf\nKernel_Outer_Event_Based : %lf\nKernel_Outer_Launch_Overhead: %lf\nKernel_Outer_Times_called %d\n",ker_launch_over[0],ker_exec_time[0],ker_launch_over[0]-ker_exec_time[0],ker_call_nums[0]);
+     printf("Kernel_Inner_NDRange_time: %lf\nKernel_Inner_Event_Based: %lf\nKernel_Inner_Launch_Overhead: %lf\n,Kernel_Inner_Times_called %d\n",ker_launch_over[1],ker_exec_time[1],ker_launch_over[1]-ker_exec_time[1],ker_call_nums[1]);
+     printf("Kernel_Velocity_delta_NDRange_time: %lf\nKernel_Velocity_delta_Event_Based : %lf\nKernel_Velocity_delta_Launch_Overhead: %lf\nKernel_Velocity_delta_Times_called %d\n",ker_launch_over[2],ker_exec_time[2],ker_launch_over[2]-ker_exec_time[2],ker_call_nums[2]);
+     printf("Kernel_DD_Coeff_NDRange_time: %lf\nKernel_DD_Coeff_Event_Based : %lf\nKernel_DD_Coeff_Launch_Overhead: %lf\nKernel_DD_Coeff_Times_called %d\n",ker_launch_over[3],ker_exec_time[3],ker_launch_over[3]-ker_exec_time[3],ker_call_nums[3]);
+     printf("Kernel_Denominator_NDRange_time: %lf\nKernel_Denominator_Event_Based : %lf\nKernel_Denominator_Launch_Overhead: %lf\nKernel_Denominator_Times_called %d\n",ker_launch_over[4],ker_exec_time[4],ker_launch_over[4]-ker_exec_time[4],ker_call_nums[4]);
+     printf("Kernel_Scalar_flux_NDRange_time: %lf\nKernel_Scalar_flux_Event_Based : %lf\nKernel_Scalar_flux_Launch_Overhead: %lf\nKernel_Scalar_flux_Times_called %d\n",ker_launch_over[5],ker_exec_time[5],ker_launch_over[5]-ker_exec_time[5],ker_call_nums[5]);
+     printf("Kernel_Scalar_flux_moment_NDRange_time: %lf\nKernel_Scalar_flux_moment_Event_Based : %lf\nKernel_Scalar_flux_moment_Launch_Overhead: %lf\nKernel_Scalar_flux_moment_Times_called  %d\n",ker_launch_over[6],ker_exec_time[6],ker_launch_over[6]-ker_exec_time[6],ker_call_nums[6]);
+     printf("Kernel_Sweep_NDRange_time: %lf\nKernel_Sweep_Event_Based : %lf\nKernel_Sweep_Launch_Overhead: %lf\nKernel_Sweep_Times_called %d\n",ker_launch_over[7],ker_exec_time[7],ker_launch_over[7]-ker_exec_time[7],ker_call_nums[7]);
+     printf("Kernel_Zero_buffer_NDRange time: %lf\nKernel_Zero_buffer_Event_Based : %lf\nKernel_Zero_buffer_Launch_Overhead: %lf\nKernel_Zero_buffer_Times_called %d\n",ker_launch_over[8],ker_exec_time[8],ker_launch_over[8]-ker_exec_time[8],ker_call_nums[8]);
+     
+
+     for(int i=0;i<9;i++)
+	{
+	ker_launch_over[i]=0;
+	ker_exec_time[i]=0;
+	ker_call_nums[i]=0;
+	}
+	
 }
 
 void print_banner(void)
