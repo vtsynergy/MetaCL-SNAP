@@ -25,10 +25,15 @@ double ker_launch_over[9]={0,0,0,0,0,0,0,0,0};
 double ker_exec_time[9]={0,0,0,0,0,0,0,0,0};
 int ker_call_nums[9]={0,0,0,0,0,0,0,0,0};
 size_t null_offset[3]={0,0,0};
+int it_mon=0;
+double **ketime; 
+double **wctime;
+int **times;
 int deviceIndex;
 cl_ulong start_time, end_time; size_t return_bytes;
 struct timespec start, end;
 /** \mainpage
+
 * SNAP-MPI is a cut down version of the SNAP mini-app which allows us to
 * investigate MPI decomposition schemes with OpenCL for node-level computation.
 *
@@ -113,7 +118,15 @@ int main(int argc, char **argv)
     // Set up communication neighbours
     struct rankinfo rankinfo;
     setup_comms(&problem, &rankinfo);
-
+    int is;
+    ketime = (double **)malloc(9 * sizeof(double *)); 
+    wctime = (double **)malloc(9* sizeof(double *)); 
+    times =    (int **)malloc(9 * sizeof(int *)); 
+    for (is=0; is<9; is++) {
+         ketime[is] = (double *)malloc((problem.iitm +1) * sizeof(double)); 
+         wctime[is] = (double *)malloc((problem.iitm +1) * sizeof(double)); 
+         times[is] = (int *)malloc((problem.iitm +1) * sizeof(int)); 
+    }
     // Initlise the OpenCL
     struct context context;
     init_ocl(&context, problem.multigpu, rankinfo.rank);
@@ -319,7 +332,7 @@ int main(int argc, char **argv)
             double max_outer_diff;
             double conv_tick = wtime();
             outerdone = outer_convergence(&problem, &rankinfo, &memory, &max_outer_diff) && innerdone;
-
+            print_res();
             if (profiling && rankinfo.rank == 0)
                 timers.convergence_time += wtime() - conv_tick;
 
@@ -335,7 +348,7 @@ int main(int argc, char **argv)
 
             if (outerdone)
                 break;
-	print_res();
+	
         }
         //----------------------------------------------
         // End of Outers
@@ -392,39 +405,37 @@ int main(int argc, char **argv)
 
     release_context(&context);
     finish_comms();
-     /*
-     printf("Kernel: Outer, NDRange time: %lf, Event Based Time: %lf, Launch Overhead: %lf, #Times called %d\n",ker_launch_over[0],ker_exec_time[0],ker_launch_over[0]-ker_exec_time[0],ker_call_nums[0]);
-     printf("Kernel: Inner, NDRange time: %lf, Event Based Time: %lf, Launch Overhead: %lf, #Times called %d\n",ker_launch_over[1],ker_exec_time[1],ker_launch_over[1]-ker_exec_time[1],ker_call_nums[1]);
-     printf("Kernel: Velocity_delta, NDRange time: %lf, Event Based Time: %lf, Launch Overhead: %lf, #Times called %d\n",ker_launch_over[2],ker_exec_time[2],ker_launch_over[2]-ker_exec_time[2],ker_call_nums[2]);
-     printf("Kernel: DD_Coeff, NDRange time: %lf, Event Based Time: %lf, Launch Overhead: %lf, #Times called %d\n",ker_launch_over[3],ker_exec_time[3],ker_launch_over[3]-ker_exec_time[3],ker_call_nums[3]);
-     printf("Kernel: Denominator, NDRange time: %lf, Event Based Time: %lf, Launch Overhead: %lf, #Times called %d\n",ker_launch_over[4],ker_exec_time[4],ker_launch_over[4]-ker_exec_time[4],ker_call_nums[4]);
-     printf("Kernel: Scalar_flux, NDRange time: %lf, Event Based Time: %lf, Launch Overhead: %lf, #Times called %d\n",ker_launch_over[5],ker_exec_time[5],ker_launch_over[5]-ker_exec_time[5],ker_call_nums[5]);
-     printf("Kernel: Scalar_flux_moment, NDRange time: %lf, Event Based Time: %lf, Launch Overhead: %lf, #Times called %d\n",ker_launch_over[6],ker_exec_time[6],ker_launch_over[6]-ker_exec_time[6],ker_call_nums[6]);
-     printf("Kernel: Sweep, NDRange time: %lf, Event Based Time: %lf, Launch Overhead: %lf, #Times called %d\n",ker_launch_over[7],ker_exec_time[7],ker_launch_over[7]-ker_exec_time[7],ker_call_nums[7]);
-     printf("Kernel: Zero_buffer, NDRange time: %lf, Event Based Time: %lf, Launch Overhead: %lf, #Times called %d\n",ker_launch_over[8],ker_exec_time[8],ker_launch_over[8]-ker_exec_time[8],ker_call_nums[8]);
-	*/
+    int it=0;
+    for(it=0;it<it_mon;it++){
+        if(it==0)
+ 	printf("****initialization *******\n",it+1);
+	else printf("****iteration %d *******\n",it);
+       printf("Kernel_Outer_NDRange_time: %lf\nKernel_Outer_Event_Based : %lf\nKernel_Outer_Launch_Overhead: %lf\nKernel_Outer_Times_called %d\n",wctime[0][it],ketime[0][it],wctime[0][it]-ketime[it][0],times[0][it]);
+     printf("Kernel_Inner_NDRange_time: %lf\nKernel_Inner_Event_Based: %lf\nKernel_Inner_Launch_Overhead: %lf\n,Kernel_Inner_Times_called %d\n",wctime[1][it],ketime[1][it],wctime[1][it]-ketime[1][it],times[1][it]);
+     printf("Kernel_Velocity_delta_NDRange_time: %lf\nKernel_Velocity_delta_Event_Based : %lf\nKernel_Velocity_delta_Launch_Overhead: %lf\nKernel_Velocity_delta_Times_called %d\n",wctime[2][it],ketime[2][it],wctime[2][it]-ketime[2][it],times[2][it]);
+     printf("Kernel_DD_Coeff_NDRange_time: %lf\nKernel_DD_Coeff_Event_Based : %lf\nKernel_DD_Coeff_Launch_Overhead: %lf\nKernel_DD_Coeff_Times_called %d\n",wctime[3][it],ketime[3][it],wctime[3][it]-ketime[3][it],times[3][it]);
+     printf("Kernel_Denominator_NDRange_time: %lf\nKernel_Denominator_Event_Based : %lf\nKernel_Denominator_Launch_Overhead: %lf\nKernel_Denominator_Times_called %d\n",wctime[4][it],ketime[4][it],wctime[4][it]-ketime[4][it],times[4][it]);
+     printf("Kernel_Scalar_flux_NDRange_time: %lf\nKernel_Scalar_flux_Event_Based : %lf\nKernel_Scalar_flux_Launch_Overhead: %lf\nKernel_Scalar_flux_Times_called %d\n",wctime[5][it],ketime[5][it],wctime[5][it]-ketime[5][it],times[5][it]);
+     printf("Kernel_Scalar_flux_moment_NDRange_time: %lf\nKernel_Scalar_flux_moment_Event_Based : %lf\nKernel_Scalar_flux_moment_Launch_Overhead: %lf\nKernel_Scalar_flux_moment_Times_called  %d\n",wctime[6][it],ketime[6][it],wctime[6][it]-ketime[6][it],times[6][it]);
+     printf("Kernel_Sweep_NDRange_time: %lf\nKernel_Sweep_Event_Based : %lf\nKernel_Sweep_Launch_Overhead: %lf\nKernel_Sweep_Times_called %d\n",wctime[7][it],ketime[7][it],wctime[7][it]-ketime[7][it],times[7][it]);
+     printf("Kernel_Zero_buffer_NDRange time: %lf\nKernel_Zero_buffer_Event_Based : %lf\nKernel_Zero_buffer_Launch_Overhead: %lf\nKernel_Zero_buffer_Times_called %d\n",wctime[8][it],ketime[8][it],wctime[8][it]-ketime[8][it],times[8][it]);
+	printf("************************\n\n");
+     }
     return EXIT_SUCCESS;
 }
 
 void print_res(){
-	printf("Kernel_Outer_NDRange_time: %lf\nKernel_Outer_Event_Based : %lf\nKernel_Outer_Launch_Overhead: %lf\nKernel_Outer_Times_called %d\n",ker_launch_over[0],ker_exec_time[0],ker_launch_over[0]-ker_exec_time[0],ker_call_nums[0]);
-     printf("Kernel_Inner_NDRange_time: %lf\nKernel_Inner_Event_Based: %lf\nKernel_Inner_Launch_Overhead: %lf\n,Kernel_Inner_Times_called %d\n",ker_launch_over[1],ker_exec_time[1],ker_launch_over[1]-ker_exec_time[1],ker_call_nums[1]);
-     printf("Kernel_Velocity_delta_NDRange_time: %lf\nKernel_Velocity_delta_Event_Based : %lf\nKernel_Velocity_delta_Launch_Overhead: %lf\nKernel_Velocity_delta_Times_called %d\n",ker_launch_over[2],ker_exec_time[2],ker_launch_over[2]-ker_exec_time[2],ker_call_nums[2]);
-     printf("Kernel_DD_Coeff_NDRange_time: %lf\nKernel_DD_Coeff_Event_Based : %lf\nKernel_DD_Coeff_Launch_Overhead: %lf\nKernel_DD_Coeff_Times_called %d\n",ker_launch_over[3],ker_exec_time[3],ker_launch_over[3]-ker_exec_time[3],ker_call_nums[3]);
-     printf("Kernel_Denominator_NDRange_time: %lf\nKernel_Denominator_Event_Based : %lf\nKernel_Denominator_Launch_Overhead: %lf\nKernel_Denominator_Times_called %d\n",ker_launch_over[4],ker_exec_time[4],ker_launch_over[4]-ker_exec_time[4],ker_call_nums[4]);
-     printf("Kernel_Scalar_flux_NDRange_time: %lf\nKernel_Scalar_flux_Event_Based : %lf\nKernel_Scalar_flux_Launch_Overhead: %lf\nKernel_Scalar_flux_Times_called %d\n",ker_launch_over[5],ker_exec_time[5],ker_launch_over[5]-ker_exec_time[5],ker_call_nums[5]);
-     printf("Kernel_Scalar_flux_moment_NDRange_time: %lf\nKernel_Scalar_flux_moment_Event_Based : %lf\nKernel_Scalar_flux_moment_Launch_Overhead: %lf\nKernel_Scalar_flux_moment_Times_called  %d\n",ker_launch_over[6],ker_exec_time[6],ker_launch_over[6]-ker_exec_time[6],ker_call_nums[6]);
-     printf("Kernel_Sweep_NDRange_time: %lf\nKernel_Sweep_Event_Based : %lf\nKernel_Sweep_Launch_Overhead: %lf\nKernel_Sweep_Times_called %d\n",ker_launch_over[7],ker_exec_time[7],ker_launch_over[7]-ker_exec_time[7],ker_call_nums[7]);
-     printf("Kernel_Zero_buffer_NDRange time: %lf\nKernel_Zero_buffer_Event_Based : %lf\nKernel_Zero_buffer_Launch_Overhead: %lf\nKernel_Zero_buffer_Times_called %d\n",ker_launch_over[8],ker_exec_time[8],ker_launch_over[8]-ker_exec_time[8],ker_call_nums[8]);
-     
-
-     for(int i=0;i<9;i++)
-	{
-	ker_launch_over[i]=0;
+    int i;   
+    for(i=0;i<9;i++)
+     {
+	wctime[i][it_mon]=ker_launch_over[i];
+ 	ketime[i][it_mon]=ker_exec_time[i];
+	times[i][it_mon]=ker_call_nums[i];
+        ker_launch_over[i]=0;
 	ker_exec_time[i]=0;
 	ker_call_nums[i]=0;
-	}
-	
+     }
+     it_mon++;
 }
 
 void print_banner(void)
