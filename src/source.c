@@ -73,12 +73,14 @@ void compute_inner_source(
         context->kernels.inner_source,
         3, 0, global, NULL,
         0, NULL, &inner_source_event);
-    clFinish(context->queue);
+    //err=clFinish(context->queue);
+    clWaitForEvents(1,  &inner_source_event);
     clock_gettime(CLOCK_REALTIME, &end);
     ker_launch_over[1]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
     err = clGetEventProfilingInfo(inner_source_event,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);
     err = clGetEventProfilingInfo(inner_source_event,CL_PROFILING_COMMAND_END,sizeof(cl_ulong), &end_time,&return_bytes);
     ker_exec_time[1]+=(double)(end_time-start_time)/BILLION;
+    
     check_ocl(err, "Enqueue inner source kernel");
     ker_call_nums[1]++;
 }

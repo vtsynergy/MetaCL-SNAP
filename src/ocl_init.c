@@ -2,7 +2,7 @@
 #include "profiler.h"
 #include "ocl_global.h"
 #include "ocl_kernels.h"
-extern deviceIndex;
+extern int deviceIndex;
 #define MAX_DEVICES 16
 
 void check_ocl_error(const cl_int err, const char *msg, const int line, const char * file)

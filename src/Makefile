@@ -12,7 +12,7 @@ endif
 CFLAGS_			=  -O3
 CFLAGS_INTEL	= -O3 -std=c99
 CFLAGS_CRAY		= -O3
-CFLAGS_GNU		=  -g -O3 -std=c99 -lm
+CFLAGS_GNU		=  -g -O3 -std=gnu99 -lm
 
 MPI_COMPILER 	= mpicc
 
