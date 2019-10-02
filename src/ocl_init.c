@@ -2,7 +2,7 @@
 #include "profiler.h"
 #include "ocl_global.h"
 #include "ocl_kernels.h"
-
+extern int deviceIndex;
 #define MAX_DEVICES 16
 
 void check_ocl_error(const cl_int err, const char *msg, const int line, const char * file)
@@ -19,7 +19,7 @@ void init_ocl(struct context * context, const bool multigpu, const int rank)
     cl_int err;
 
     // Get list of platforms
-    cl_uint num_platforms;
+       cl_uint num_platforms;
     err = clGetPlatformIDs(0, NULL, &num_platforms);
     check_ocl(err, "Getting number of platforms");
     cl_platform_id *platforms = malloc(num_platforms*sizeof(cl_platform_id));
@@ -27,24 +27,23 @@ void init_ocl(struct context * context, const bool multigpu, const int rank)
     check_ocl(err, "Getting platforms");
 
     // Get a GPU device
-    cl_device_type type = CL_DEVICE_TYPE_GPU;
+    cl_device_type type = CL_DEVICE_TYPE_ALL;
     cl_uint num_devices = 0;
     cl_device_id devices[MAX_DEVICES];
     for (unsigned int i = 0; i < num_platforms; i++)
     {
-        clGetDeviceIDs(platforms[i], type, MAX_DEVICES, devices, &num_devices);
-        if (num_devices == 1)
-            break;
+        cl_uint num;
+        err = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_ALL, MAX_DEVICES-num_devices, devices+num_devices, &num);
+        check_ocl(err, "Getting devices");
+        num_devices += num;
     }
     free(platforms);
     if (num_devices == 0)
         check_ocl(CL_DEVICE_NOT_FOUND, "Cannot find a GPU device");
-
-
     if (!multigpu)
     {
         // Just pick the first GPU device
-        context->device = devices[0];
+        context->device = devices[deviceIndex];
     #ifdef __APPLE__
         // If we on my MacBook we need the second GPU (the discrete one)
         context->device = devices[1];
