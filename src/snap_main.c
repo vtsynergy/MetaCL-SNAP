@@ -123,9 +123,9 @@ int main(int argc, char **argv)
     wctime = (double **)malloc(9* sizeof(double *)); 
     times =    (int **)malloc(9 * sizeof(int *)); 
     for (is=0; is<9; is++) {
-         ketime[is] = (double *)malloc((problem.iitm +1) * sizeof(double)); 
-         wctime[is] = (double *)malloc((problem.iitm +1) * sizeof(double)); 
-         times[is] = (int *)malloc((problem.iitm +1) * sizeof(int)); 
+         ketime[is] = (double *)malloc((problem.nsteps +1) * sizeof(double)); 
+         wctime[is] = (double *)malloc((problem.nsteps +1) * sizeof(double)); 
+         times[is] = (int *)malloc((problem.nsteps +1) * sizeof(int)); 
     }
     // Initlise the OpenCL
     struct context context;
@@ -185,7 +185,7 @@ int main(int argc, char **argv)
     }
 
     unsigned int total_iterations = 0;
-
+	print_res();
     //----------------------------------------------
     // Timestep loop
     //----------------------------------------------
@@ -213,7 +213,7 @@ int main(int argc, char **argv)
         //----------------------------------------------
         // Outers
         //----------------------------------------------
-	print_res();
+	
         for (unsigned int o = 0; o < problem.oitm; o++)
         {
             init_velocity_delta(&problem, &context, &buffers);
@@ -332,7 +332,7 @@ int main(int argc, char **argv)
             double max_outer_diff;
             double conv_tick = wtime();
             outerdone = outer_convergence(&problem, &rankinfo, &memory, &max_outer_diff) && innerdone;
-            print_res();
+         
             if (profiling && rankinfo.rank == 0)
                 timers.convergence_time += wtime() - conv_tick;
 
@@ -385,7 +385,7 @@ int main(int argc, char **argv)
             printf(format, population);
             printf("\n");
         }
-
+	   print_res();
     }
     //----------------------------------------------
     // End of Timestep
@@ -410,7 +410,7 @@ int main(int argc, char **argv)
         if(it==0)
  	printf("****initialization *******\n",it+1);
 	else printf("****iteration %d *******\n",it);
-       printf("Kernel_Outer_NDRange_time: %lf\nKernel_Outer_Event_Based : %lf\nKernel_Outer_Launch_Overhead: %lf\nKernel_Outer_Times_called %d\n",wctime[0][it],ketime[0][it],wctime[0][it]-ketime[it][0],times[0][it]);
+       printf("Kernel_Outer_NDRange_time: %lf\nKernel_Outer_Event_Based : %lf\nKernel_Outer_Launch_Overhead: %lf\nKernel_Outer_Times_called %d\n",wctime[0][it],ketime[0][it],wctime[0][it]-ketime[0][it],times[0][it]);
      printf("Kernel_Inner_NDRange_time: %lf\nKernel_Inner_Event_Based: %lf\nKernel_Inner_Launch_Overhead: %lf\n,Kernel_Inner_Times_called %d\n",wctime[1][it],ketime[1][it],wctime[1][it]-ketime[1][it],times[1][it]);
      printf("Kernel_Velocity_delta_NDRange_time: %lf\nKernel_Velocity_delta_Event_Based : %lf\nKernel_Velocity_delta_Launch_Overhead: %lf\nKernel_Velocity_delta_Times_called %d\n",wctime[2][it],ketime[2][it],wctime[2][it]-ketime[2][it],times[2][it]);
      printf("Kernel_DD_Coeff_NDRange_time: %lf\nKernel_DD_Coeff_Event_Based : %lf\nKernel_DD_Coeff_Launch_Overhead: %lf\nKernel_DD_Coeff_Times_called %d\n",wctime[3][it],ketime[3][it],wctime[3][it]-ketime[3][it],times[3][it]);
