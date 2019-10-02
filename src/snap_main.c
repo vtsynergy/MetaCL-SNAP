@@ -22,7 +22,7 @@
 
 double sweep_mpi_time = 0.0;
 double sweep_mpi_recv_time = 0.0;
-
+int deviceIndex;
 /** \mainpage
 * SNAP-MPI is a cut down version of the SNAP mini-app which allows us to
 * investigate MPI decomposition schemes with OpenCL for node-level computation.
@@ -48,6 +48,14 @@ void print_timing_report(struct timers * timers, struct problem * problem, unsig
 /** \brief Main function, contains iteration loops */
 int main(int argc, char **argv)
 {
+        
+    if(argc>2){
+  	char *c =argv[2];
+  	deviceIndex= atoi(c);
+  	printf("device number entered is %d\n", deviceIndex);
+    }
+
+
     int mpi_err = MPI_Init(&argc, &argv);
     check_mpi(mpi_err, "MPI_Init");
 
@@ -71,7 +79,7 @@ int main(int argc, char **argv)
         print_banner();
 
         // Check for two files on CLI
-        if (argc != 2)
+        if (argc < 2)
         {
             fprintf(stderr, "Usage: ./snap snap.in\n");
             exit(EXIT_FAILURE);

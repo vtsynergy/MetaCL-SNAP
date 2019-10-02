@@ -54,6 +54,6 @@ ocl_init.c:	$(KERNEL_HEADER_FILES)
 
 .PHONY: clean
 run: 
-	LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/metaCL_workspace/MetaMorph/lib  ./snap $(i) 
+	LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/metaCL_workspace/MetaMorph/lib  ./snap $(i) $(device)
 clean:
 	rm -f snap kernels/*.h
