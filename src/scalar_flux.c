@@ -57,6 +57,8 @@ void compute_scalar_flux(
 //        context->kernels.reduce_flux,
 //        2, 0, global, local,
 //        0, NULL, &scalar_flux_event);
+     err=clFinish(context->queue);
+    err=clFinish(context->copy_queue);
     
    clock_gettime(CLOCK_REALTIME, &start);
     err = meta_gen_opencl_reduce_flux_reduce_flux(context->queue, global, local, null_offset,rankinfo->nx,  rankinfo->ny,  rankinfo->nz,  problem->nang,  problem->ng, &buffers->angular_flux_in[0],  &buffers->angular_flux_in[1],&buffers->angular_flux_in[2], &buffers->angular_flux_in[3], &buffers->angular_flux_in[4], &buffers->angular_flux_in[5], &buffers->angular_flux_in[6], &buffers->angular_flux_in[7], &buffers->angular_flux_out[0], &buffers->angular_flux_out[1], &buffers->angular_flux_out[2], &buffers->angular_flux_out[3], &buffers->angular_flux_out[4], &buffers->angular_flux_out[5], &buffers->angular_flux_out[6], &buffers->angular_flux_out[7], &buffers->velocity_delta, &buffers->quad_weights, &buffers->scalar_flux, (size_t) local[0], 0,&scalar_flux_event);
@@ -120,7 +122,9 @@ void compute_scalar_flux_moments(
 //        context->kernels.reduce_flux_moments,
 //        2, 0, global, local,
 //        0, NULL, &scalar_flux_moments_event);
-
+   err=clFinish(context->queue);
+    err=clFinish(context->copy_queue);
+    
   clock_gettime(CLOCK_REALTIME, &start);
    err = meta_gen_opencl_reduce_flux_moments_reduce_flux_moments(context->queue, global, local, null_offset,rankinfo->nx,  rankinfo->ny,  rankinfo->nz,  problem->nang,  problem->ng, problem->cmom, &buffers->angular_flux_in[0],  &buffers->angular_flux_in[1],&buffers->angular_flux_in[2], &buffers->angular_flux_in[3], &buffers->angular_flux_in[4], &buffers->angular_flux_in[5], &buffers->angular_flux_in[6], &buffers->angular_flux_in[7], &buffers->angular_flux_out[0], &buffers->angular_flux_out[1], &buffers->angular_flux_out[2], &buffers->angular_flux_out[3], &buffers->angular_flux_out[4], &buffers->angular_flux_out[5], &buffers->angular_flux_out[6], &buffers->angular_flux_out[7], &buffers->velocity_delta,&buffers->quad_weights, &buffers->scat_coeff, &buffers->scalar_flux_moments, (size_t) local[0], 0,&scalar_flux_moments_event);
 clock_gettime(CLOCK_REALTIME, &end);

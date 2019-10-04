@@ -277,6 +277,8 @@ void init_velocity_delta(
 //        context->kernels.calc_velocity_delta,
 //        1, 0, global, NULL,
 //        0, NULL, &velocity_delta_event);
+     err=clFinish(context->queue);
+    err=clFinish(context->copy_queue);
     
     size_t global[3] = {problem->ng,1,1};
     size_t local[3] = {0,0,0};clock_gettime(CLOCK_REALTIME, &start);
@@ -315,7 +317,8 @@ void calculate_dd_coefficients(
 //        context->kernels.calc_dd_coeff,
 //        1, 0, global, NULL,
 //        0, NULL, NULL);
-    
+     err=clFinish(context->queue);
+    err=clFinish(context->copy_queue);
     size_t global[3] = {problem->nang,1,1};
     size_t local[3] = {0,0,0};clock_gettime(CLOCK_REALTIME, &start);
     err= meta_gen_opencl_calc_dd_coeff_calc_dd_coeff(context->queue, global, local,null_offset, problem->dx, problem->dy, problem->dz, &buffers->eta, &buffers->xi, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k, 0, &temp3);
@@ -362,6 +365,9 @@ void calculate_denominator(
    
     size_t global[3] = {problem->nang, problem->ng,1};
     size_t local[3] ={0,0,0};clock_gettime(CLOCK_REALTIME, &start);
+     err=clFinish(context->queue);
+    err=clFinish(context->copy_queue);
+    
     err= meta_gen_opencl_calc_denominator_calc_denominator(context->queue, global, local, null_offset,rankinfo->nx, rankinfo->ny, rankinfo->nz, problem->nang, problem->ng, &buffers->mat_cross_section, &buffers->velocity_delta, &buffers->mu, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k, &buffers->denominator, 0, &denominator_event);
     clock_gettime(CLOCK_REALTIME, &end);
     ker_launch_over[4]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;

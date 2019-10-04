@@ -184,6 +184,9 @@ void zero_buffer(struct context * context, cl_mem buffer, size_t offset, size_t 
     //check_ocl(err, "Setting buffer zero kernel argument");
     size_t global[3] = {size,1,1};
     size_t local[3] = {0,0,0};
+     err=clFinish(context->queue);
+    err=clFinish(context->copy_queue);
+    
     //err = clEnqueueNDRangeKernel(context->queue,context->kernels.zero_buffer,1, &offset, &size, NULL, 0, NULL, NULL);
     clock_gettime(CLOCK_REALTIME, &start);
     err = meta_gen_opencl_zero_buffer_zero_buffer(context->queue, global, local, enq_off,&buffer, 0, &temp2);

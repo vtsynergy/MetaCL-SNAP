@@ -36,7 +36,9 @@ void compute_outer_source(
 //        context->kernels.outer_source,
 //        3, 0, global, NULL,
 //        0, NULL, &outer_source_event);
-  
+   err=clFinish(context->queue);
+    err=clFinish(context->copy_queue);
+    
    size_t global[3] = {rankinfo->nx, rankinfo->ny, rankinfo->nz};
     size_t local[3] = {0,0,0};clock_gettime(CLOCK_REALTIME, &start);
     err = meta_gen_opencl_outer_source_calc_outer_source(context->queue, global, local, null_offset,rankinfo->nx, rankinfo->ny, rankinfo->nz, problem->ng, problem->cmom, problem->nmom, &buffers->fixed_source, &buffers->scattering_matrix, &buffers->scalar_flux, &buffers->scalar_flux_moments, &buffers->outer_source, 0, &outer_source_event);
