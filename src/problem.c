@@ -275,7 +275,7 @@ void init_velocity_delta(
     
     size_t global[3] = {problem->ng,1,1};
     size_t local[3] = {0,0,0};
-    err = meta_gen_opencl_calc_velocity_delta_calc_velocity_delta(context->queue, global, local, &buffers->velocities, problem->dt, &buffers->velocity_delta, 0, &velocity_delta_event);
+    err = meta_gen_opencl_calc_velocity_delta_calc_velocity_delta(context->queue, global, local, &buffers->velocities, problem->dt, &buffers->velocity_delta, 1, &velocity_delta_event);
     check_ocl(err, "Enqueue velocity delta calculation kernel");
     
 }
@@ -307,7 +307,7 @@ void calculate_dd_coefficients(
     
     size_t global[3] = {problem->nang,1,1};
     size_t local[3] = {0,0,0};
-    err= meta_gen_opencl_calc_dd_coeff_calc_dd_coeff(context->queue, global, local, problem->dx, problem->dy, problem->dz, &buffers->eta, &buffers->xi, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k, 0, NULL);
+    err= meta_gen_opencl_calc_dd_coeff_calc_dd_coeff(context->queue, global, local, problem->dx, problem->dy, problem->dz, &buffers->eta, &buffers->xi, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k, 1, NULL);
     check_ocl(err, "Enqueue diamond difference calculation kernel");
 }
 
@@ -344,6 +344,6 @@ void calculate_denominator(
    
     size_t global[3] = {problem->nang, problem->ng,1};
     size_t local[3] ={0,0,0};
-    err= meta_gen_opencl_calc_denominator_calc_denominator(context->queue, global, local, rankinfo->nx, rankinfo->ny, rankinfo->nz, problem->nang, problem->ng, &buffers->mat_cross_section, &buffers->velocity_delta, &buffers->mu, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k, &buffers->denominator, 0, &denominator_event);
+    err= meta_gen_opencl_calc_denominator_calc_denominator(context->queue, global, local, rankinfo->nx, rankinfo->ny, rankinfo->nz, problem->nang, problem->ng, &buffers->mat_cross_section, &buffers->velocity_delta, &buffers->mu, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k, &buffers->denominator, 1, &denominator_event);
     check_ocl(err, "Enqueue denominator kernel");
 }
