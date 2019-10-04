@@ -77,7 +77,8 @@ void compute_inner_source(
 //        context->kernels.inner_source,
 //        3, 0, global, NULL,
 //        0, NULL, &inner_source_event);
-    
+    err=clFinish(context->queue);
+    err=clFinish(context->copy_queue);
    size_t global[3] = {rankinfo->nx, rankinfo->ny, rankinfo->nz};
     size_t local[3] = {0,0,0};clock_gettime(CLOCK_REALTIME, &start);
     err = meta_gen_opencl_inner_source_calc_inner_source(context->queue, global, local, null_offset,rankinfo->nx, rankinfo->ny, rankinfo->nz, problem->ng, problem->cmom, problem->nmom, &buffers->outer_source, &buffers->scattering_matrix, &buffers->scalar_flux, &buffers->scalar_flux_moments, &buffers->inner_source, 0, &inner_source_event);
