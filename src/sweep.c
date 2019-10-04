@@ -77,6 +77,8 @@ void sweep_plane(
     // Second dimension: number of cells in plane
     size_t global[] = {problem->nang*problem->ng, planes[plane].num_cells};
     // Set the (many) kernel arguments
+	err=clFinish(context->queue);
+    err=clFinish(context->copy_queue);
     clock_gettime(CLOCK_REALTIME, &start);
     err = clSetKernelArg(context->kernels.sweep_plane, 0, sizeof(unsigned int), &rankinfo->nx);
     err |= clSetKernelArg(context->kernels.sweep_plane, 1, sizeof(unsigned int), &rankinfo->ny);

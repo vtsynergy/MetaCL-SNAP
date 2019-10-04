@@ -180,6 +180,7 @@ void zero_buffer(struct context * context, cl_mem buffer, size_t offset, size_t 
     cl_int err;cl_event temp2;
     clFinish(context->queue);
     clFinish(context->copy_queue);
+   
     clock_gettime(CLOCK_REALTIME, &start);
     err = clSetKernelArg(context->kernels.zero_buffer, 0, sizeof(cl_mem), &buffer);
     check_ocl(err, "Setting buffer zero kernel argument");

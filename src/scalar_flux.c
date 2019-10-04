@@ -20,6 +20,8 @@ void compute_scalar_flux(
     const size_t local[] = {power, 1};
 
     cl_int err;
+	err=clFinish(context->queue);
+    err=clFinish(context->copy_queue);
     clock_gettime(CLOCK_REALTIME, &start);
     err  = clSetKernelArg(context->kernels.reduce_flux,  0, sizeof(unsigned int), &rankinfo->nx);
     err |= clSetKernelArg(context->kernels.reduce_flux,  1, sizeof(unsigned int), &rankinfo->ny);
@@ -78,6 +80,8 @@ void compute_scalar_flux_moments(
     const size_t local[] = {power, 1};
 
     cl_int err;
+	err=clFinish(context->queue);
+    err=clFinish(context->copy_queue);
     clock_gettime(CLOCK_REALTIME, &start);
     err  = clSetKernelArg(context->kernels.reduce_flux_moments,  0, sizeof(unsigned int), &rankinfo->nx);
     err |= clSetKernelArg(context->kernels.reduce_flux_moments,  1, sizeof(unsigned int), &rankinfo->ny);

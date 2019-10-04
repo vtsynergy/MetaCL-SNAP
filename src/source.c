@@ -15,6 +15,8 @@ void compute_outer_source(
 {
     size_t global[] = {rankinfo->nx, rankinfo->ny, rankinfo->nz};
     cl_int err;
+	err=clFinish(context->queue);
+    err=clFinish(context->copy_queue);
     clock_gettime(CLOCK_REALTIME, &start);
     err = clSetKernelArg(context->kernels.outer_source, 0, sizeof(unsigned int), &rankinfo->nx);
     err |= clSetKernelArg(context->kernels.outer_source, 1, sizeof(unsigned int), &rankinfo->ny);
@@ -54,6 +56,8 @@ void compute_inner_source(
 {
     cl_int err;
     size_t global[] = {rankinfo->nx, rankinfo->ny, rankinfo->nz};
+    err=clFinish(context->queue);
+    err=clFinish(context->copy_queue);
     clock_gettime(CLOCK_REALTIME, &start);
     err = clSetKernelArg(context->kernels.inner_source, 0, sizeof(unsigned int), &rankinfo->nx);
     err |= clSetKernelArg(context->kernels.inner_source, 1, sizeof(unsigned int), &rankinfo->ny);
@@ -73,8 +77,8 @@ void compute_inner_source(
         context->kernels.inner_source,
         3, 0, global, NULL,
         0, NULL, &inner_source_event);
-    //err=clFinish(context->queue);
-    clWaitForEvents(1,  &inner_source_event);
+    err=clFinish(context->queue);
+    //clWaitForEvents(1,  &inner_source_event);
     clock_gettime(CLOCK_REALTIME, &end);
     ker_launch_over[1]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
     err = clGetEventProfilingInfo(inner_source_event,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);

@@ -266,6 +266,8 @@ void init_velocity_delta(
     // We do this on the device because SNAP does it every outer
     cl_int err;
     size_t global[] = {problem->ng};
+    err=clFinish(context->queue);
+    err=clFinish(context->copy_queue);
     clock_gettime(CLOCK_REALTIME, &start);
     err = clSetKernelArg(context->kernels.calc_velocity_delta, 0, sizeof(cl_mem), &buffers->velocities);
     err |= clSetKernelArg(context->kernels.calc_velocity_delta, 1, sizeof(double), &problem->dt);
@@ -297,6 +299,8 @@ void calculate_dd_coefficients(
     // We do this on the device because SNAP does it every outer
     cl_int err;cl_event temp3;
     size_t global[] = {problem->nang};
+    err=clFinish(context->queue);
+    err=clFinish(context->copy_queue);
     clock_gettime(CLOCK_REALTIME, &start);
     err = clSetKernelArg(context->kernels.calc_dd_coeff, 0, sizeof(double), &problem->dx);
     err |= clSetKernelArg(context->kernels.calc_dd_coeff, 1, sizeof(double), &problem->dy);
@@ -334,6 +338,8 @@ void calculate_denominator(
     // We do this on the device because SNAP does it every outer
     cl_int err;
     size_t global[] = {problem->nang, problem->ng};
+    err=clFinish(context->queue);
+    err=clFinish(context->copy_queue);
     clock_gettime(CLOCK_REALTIME, &start);
     err = clSetKernelArg(context->kernels.calc_denominator, 0, sizeof(unsigned int), &rankinfo->nx);
     err |= clSetKernelArg(context->kernels.calc_denominator, 1, sizeof(unsigned int), &rankinfo->ny);
@@ -355,6 +361,7 @@ void calculate_denominator(
         2, 0, global, NULL,
         0, NULL, &denominator_event);
     clFinish(context->queue);
+    
     clock_gettime(CLOCK_REALTIME, &end);
     ker_launch_over[4]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
     err = clGetEventProfilingInfo(denominator_event,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);
