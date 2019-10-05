@@ -362,11 +362,11 @@ void calculate_denominator(
 //        context->kernels.calc_denominator,
 //        2, 0, global, NULL,
 //        0, NULL, &denominator_event);
-   
-    size_t global[3] = {problem->nang, problem->ng,1};
-    size_t local[3] ={0,0,0};clock_gettime(CLOCK_REALTIME, &start);
      err=clFinish(context->queue);
     err=clFinish(context->copy_queue);
+    size_t global[3] = {problem->nang, problem->ng,1};
+    size_t local[3] ={0,0,0};clock_gettime(CLOCK_REALTIME, &start);
+   
     
     err= meta_gen_opencl_calc_denominator_calc_denominator(context->queue, global, local, null_offset,rankinfo->nx, rankinfo->ny, rankinfo->nz, problem->nang, problem->ng, &buffers->mat_cross_section, &buffers->velocity_delta, &buffers->mu, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k, &buffers->denominator, 0, &denominator_event);
     clock_gettime(CLOCK_REALTIME, &end);
