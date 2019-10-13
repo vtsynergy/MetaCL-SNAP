@@ -82,7 +82,7 @@ void init_ocl(struct context * context, const bool multigpu, const int rank)
     meta_set_acc(deviceIndex, metaModePreferOpenCL); //Must be set to OpenCL, don't need a device since we will override
     meta_get_state_OpenCL(&fplatforms ,&context->device, &context->context, &context->queue);
     //meta_get_state_OpenCL(&fplatforms ,&context->device, &context->context, &context->copy_queue);
-	context->copy_queue = clCreateCommandQueue(context->context, context->device, 0, &err);
+	context->copy_queue = clCreateCommandQueue(context->context, context->device, CL_QUEUE_PROFILING_ENABLE, &err);
     check_ocl(err, "Creating copy command queue");
     
     
