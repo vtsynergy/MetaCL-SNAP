@@ -6,13 +6,13 @@ endif
 ifeq ($(shell uname), Darwin)
 	OCL = -framework OpenCL
 else
-	OCL = -lOpenCL -lmm_opencl_backend -lmetamorph 
+	OCL = -L/opt/intel/inteloneapi/compiler/2021.1-beta03/linux/lib/oclfpga/host/linux64/lib -lOpenCL  -lmm_opencl_backend -lmetamorph 
 endif
 
-CFLAGS_			=  -D WITH_OPENCL -I ~/metaCL_workspace/MetaMorph/include -I ~/metaCL_workspace/MetaMorph/metamorph-backends/opencl-backend  -O3
+CFLAGS_			=  -D WITH_OPENCL $(shell aocl compile-config ) -I -I ~/metaCL_workspace/MetaMorph/include -I ~/metaCL_workspace/MetaMorph/metamorph-backends/opencl-backend  -O3
 CFLAGS_INTEL	=  -D WITH_OPENCL -I ~/metaCL_workspace/MetaMorph/include -I ~/metaCL_workspace/MetaMorph/metamorph-backends/opencl-backend -O3 -std=c99
 CFLAGS_CRAY		=  -D WITH_OPENCL -I ~/metaCL_workspace/MetaMorph/include -I ~/metaCL_workspace/MetaMorph/metamorph-backends/opencl-backend -O3
-CFLAGS_GNU		=  -D WITH_OPENCL -I ~/metaCL_workspace/MetaMorph/include -I ~/metaCL_workspace/MetaMorph/metamorph-backends/opencl-backend -O3 -std=c99 -lm
+CFLAGS_GNU		=  -D WITH_OPENCL $(shell aocl compile-config ) -I ~/metaCL_workspace/MetaMorph/include -I ~/metaCL_workspace/MetaMorph/metamorph-backends/opencl-backend -O3 -std=c99 -lm
 
 MPI_COMPILER 	= mpicc
 
