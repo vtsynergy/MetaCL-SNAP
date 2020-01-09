@@ -75,11 +75,25 @@ void init_ocl(struct context * context, const bool multigpu, const int rank)
     }
 
     // Create program
+    /*
     context->program = clCreateProgramWithSource(context->context, sizeof(ocl_kernels)/sizeof(char*), ocl_kernels, NULL, &err);
     check_ocl(err, "Creating program");
-
+    */
+    #define clBinaryProg(name) \
+cl_program name; { \
+       printf("Loading "#name".aocx\n"); \
+FILE * f = fopen(#name".aocx", "r"); \
+       fseek(f, 0, SEEK_END); \
+       size_t len = (size_t) ftell(f); \
+       const unsigned char * progSrc = (const unsigned char *) malloc(sizeof(char) * len); \
+       rewind(f); \
+       fread((void *) progSrc, len, 1, f); \
+       fclose(f); \
+       cl_int err; \
+       name = clCreateProgramWithBinary(context->context, 1, &context->device , &len, &progSrc, NULL, &err);}
     // Build program
     char *options = "-cl-mad-enable -cl-fast-relaxed-math";
+    /*
     cl_int build_err = clBuildProgram(context->program, 1, &context->device, options, NULL, NULL);
     if (build_err == CL_BUILD_PROGRAM_FAILURE)
     {
@@ -93,25 +107,78 @@ void init_ocl(struct context * context, const bool multigpu, const int rank)
         free(build_log);
     }
     check_ocl(build_err, "Building program");
+	*/
+    
+    clBinaryProg(calc_velocity_delta);
+    cl_int build_err = clBuildProgram(calc_velocity_delta, 1, &context->device, options, NULL, NULL);
+     if (build_err == CL_BUILD_PROGRAM_FAILURE)
+    {
+        size_t log_size;
+        err = clGetProgramBuildInfo(context->program, context->device, CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
+        check_ocl(err, "Getting build log size");
+        char *build_log = malloc(log_size);
+        err = clGetProgramBuildInfo(context->program, context->device, CL_PROGRAM_BUILD_LOG, log_size, build_log, NULL);
+        check_ocl(err, "Getting build log");
+        fprintf(stderr, "OpenCL Build log: %s\n", build_log);
+        free(build_log);
+    } 
 
     // Create the kernels
-    context->kernels.calc_velocity_delta = clCreateKernel(context->program, "calc_velocity_delta", &err);
+    context->kernels.calc_velocity_delta = clCreateKernel(calc_velocity_delta, "calc_velocity_delta", &err);  
     check_ocl(err, "Creating velocity delta kernel");
-    context->kernels.calc_dd_coeff = clCreateKernel(context->program, "calc_dd_coeff", &err);
+  
+     clBinaryProg(calc_dd_coeff);
+   build_err = clBuildProgram(calc_dd_coeff, 1, &context->device, options, NULL, NULL);
+    context->kernels.calc_dd_coeff = clCreateKernel(calc_dd_coeff, "calc_dd_coeff", &err);
     check_ocl(err, "Creating diamond difference constants kernel");
-    context->kernels.calc_denominator = clCreateKernel(context->program, "calc_denominator", &err);
+  
+  
+  
+  
+     clBinaryProg(calc_denominator);
+    build_err = clBuildProgram(calc_denominator, 1, &context->device, options, NULL, NULL);  
+    context->kernels.calc_denominator = clCreateKernel(calc_denominator, "calc_denominator", &err);
     check_ocl(err, "Creating denominator kernel");
-    context->kernels.zero_buffer = clCreateKernel(context->program, "zero_buffer", &err);
+  
+  
+  
+     clBinaryProg(zero_buffer);
+     build_err = clBuildProgram(zero_buffer, 1, &context->device, options, NULL, NULL);
+    context->kernels.zero_buffer = clCreateKernel(zero_buffer, "zero_buffer", &err);
     check_ocl(err, "Creating buffer zeroing kernel");
-    context->kernels.outer_source = clCreateKernel(context->program, "calc_outer_source", &err);
+  
+  
+  
+  
+     clBinaryProg(outer_source);
+     build_err = clBuildProgram(outer_source, 1, &context->device, options, NULL, NULL);
+    context->kernels.outer_source = clCreateKernel(outer_source, "calc_outer_source", &err);
     check_ocl(err, "Creating outer source kernel");
-    context->kernels.inner_source = clCreateKernel(context->program, "calc_inner_source", &err);
+  
+  
+     clBinaryProg(inner_source);
+     build_err = clBuildProgram(inner_source, 1, &context->device, options, NULL, NULL);
+    context->kernels.inner_source = clCreateKernel(inner_source, "calc_inner_source", &err);
     check_ocl(err, "Creating inner source kernel");
-    context->kernels.sweep_plane = clCreateKernel(context->program, "sweep_plane", &err);
+  
+  
+  
+     clBinaryProg(sweep_plane);
+    build_err = clBuildProgram(sweep_plane, 1, &context->device, options, NULL, NULL);
+    context->kernels.sweep_plane = clCreateKernel(sweep_plane, "sweep_plane", &err);
     check_ocl(err, "Creating sweep plane kernel");
-    context->kernels.reduce_flux = clCreateKernel(context->program, "reduce_flux", &err);
+  
+  
+  
+     clBinaryProg(reduce_flux);
+     build_err = clBuildProgram(reduce_flux, 1, &context->device, options, NULL, NULL);
+    context->kernels.reduce_flux = clCreateKernel(reduce_flux, "reduce_flux", &err);
     check_ocl(err, "Creating scalar flux reduction kernel");
-    context->kernels.reduce_flux_moments = clCreateKernel(context->program, "reduce_flux_moments", &err);
+  
+  
+     clBinaryProg(reduce_flux_moments);
+     build_err = clBuildProgram(reduce_flux_moments, 1, &context->device, options, NULL, NULL);
+    context->kernels.reduce_flux_moments = clCreateKernel(reduce_flux_moments, "reduce_flux_moments", &err);
     check_ocl(err, "Creating scalar flux moments reduction kernel");
 
 }
@@ -119,8 +186,8 @@ void init_ocl(struct context * context, const bool multigpu, const int rank)
 void release_context(struct context * context)
 {
     cl_int err;
-    err = clReleaseProgram(context->program);
-    check_ocl(err, "Releasing program");
+    //err = clReleaseProgram(context->program);
+    //check_ocl(err, "Releasing program");
 
 #ifdef CL_VERSION_1_2
     err = clReleaseDevice(context->device);
@@ -134,3 +201,4 @@ void release_context(struct context * context)
     check_ocl(err, "Releasing context");
 
 }
+
