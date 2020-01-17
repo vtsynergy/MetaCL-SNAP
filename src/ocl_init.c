@@ -93,15 +93,18 @@ void init_ocl(struct context * context, const bool multigpu, const int rank)
 
     // Build program
     char *options = "-cl-mad-enable -cl-fast-relaxed-math";
-    __meta_gen_opencl_calc_dd_coeff_custom_args =options;
-    __meta_gen_opencl_calc_denominator_custom_args =options;
-    __meta_gen_opencl_calc_velocity_delta_custom_args =options;
-    __meta_gen_opencl_inner_source_custom_args =options;
-    __meta_gen_opencl_outer_source_custom_args =options;
-    __meta_gen_opencl_reduce_flux_custom_args =options;
-    __meta_gen_opencl_reduce_flux_moments_custom_args =options;
-    __meta_gen_opencl_sweep_plane_custom_args =options;
-    __meta_gen_opencl_zero_buffer_custom_args  =options;
+    __meta_gen_opencl_sweep_zero_inner_reducef_custom_args=options;
+    __meta_gen_opencl_outer_zero_and_others_custom_args=options;
+   
+    //__meta_gen_opencl_calc_dd_coeff_custom_args =options;
+    //__meta_gen_opencl_calc_denominator_custom_args =options;
+    //__meta_gen_opencl_calc_velocity_delta_custom_args =options;
+    //__meta_gen_opencl_inner_source_custom_args =options;
+    //__meta_gen_opencl_outer_source_custom_args =options;
+    //__meta_gen_opencl_reduce_flux_custom_args =options;
+    //__meta_gen_opencl_reduce_flux_moments_custom_args =options;
+    //__meta_gen_opencl_sweep_plane_custom_args =options;
+    //__meta_gen_opencl_zero_buffer_custom_args  =options;
      meta_register_module(&meta_gen_opencl_metacl_module_registry);
     
 //    cl_int build_err = clBuildProgram(context->program, 1, &context->device, options, NULL, NULL);

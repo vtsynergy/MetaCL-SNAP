@@ -2,6 +2,8 @@
 #include "scalar_flux.h"
 #include "metamorph.h"
 #include "metacl_module.h"
+
+
 void compute_scalar_flux(
     struct problem * problem,
     struct rankinfo * rankinfo,
@@ -52,8 +54,8 @@ void compute_scalar_flux(
 //        2, 0, global, local,
 //        0, NULL, &scalar_flux_event);
     
-   
-    err = meta_gen_opencl_reduce_flux_reduce_flux(context->queue, global, local, rankinfo->nx,  rankinfo->ny,  rankinfo->nz,  problem->nang,  problem->ng, &buffers->angular_flux_in[0],  &buffers->angular_flux_in[1],&buffers->angular_flux_in[2], &buffers->angular_flux_in[3], &buffers->angular_flux_in[4], &buffers->angular_flux_in[5], &buffers->angular_flux_in[6], &buffers->angular_flux_in[7], &buffers->angular_flux_out[0], &buffers->angular_flux_out[1], &buffers->angular_flux_out[2], &buffers->angular_flux_out[3], &buffers->angular_flux_out[4], &buffers->angular_flux_out[5], &buffers->angular_flux_out[6], &buffers->angular_flux_out[7], &buffers->velocity_delta, &buffers->quad_weights, &buffers->scalar_flux, (size_t) local[0], 1,&scalar_flux_event);
+   size_t m_offset1[3]={0,0,0};
+    err = meta_gen_opencl_sweep_zero_inner_reducef_reduce_flux(context->queue, global, local, m_offset1, rankinfo->nx,  rankinfo->ny,  rankinfo->nz,  problem->nang,  problem->ng, &buffers->angular_flux_in[0],  &buffers->angular_flux_in[1],&buffers->angular_flux_in[2], &buffers->angular_flux_in[3], &buffers->angular_flux_in[4], &buffers->angular_flux_in[5], &buffers->angular_flux_in[6], &buffers->angular_flux_in[7], &buffers->angular_flux_out[0], &buffers->angular_flux_out[1], &buffers->angular_flux_out[2], &buffers->angular_flux_out[3], &buffers->angular_flux_out[4], &buffers->angular_flux_out[5], &buffers->angular_flux_out[6], &buffers->angular_flux_out[7], &buffers->velocity_delta, &buffers->quad_weights, &buffers->scalar_flux, (size_t) local[0], 1,&scalar_flux_event);
  check_ocl(err, "Enqueueing scalar flux reduction kernel");
 }
 
@@ -109,8 +111,8 @@ void compute_scalar_flux_moments(
 //        2, 0, global, local,
 //        0, NULL, &scalar_flux_moments_event);
 
-  
-   err = meta_gen_opencl_reduce_flux_moments_reduce_flux_moments(context->queue, global, local, rankinfo->nx,  rankinfo->ny,  rankinfo->nz,  problem->nang,  problem->ng, problem->cmom, &buffers->angular_flux_in[0],  &buffers->angular_flux_in[1],&buffers->angular_flux_in[2], &buffers->angular_flux_in[3], &buffers->angular_flux_in[4], &buffers->angular_flux_in[5], &buffers->angular_flux_in[6], &buffers->angular_flux_in[7], &buffers->angular_flux_out[0], &buffers->angular_flux_out[1], &buffers->angular_flux_out[2], &buffers->angular_flux_out[3], &buffers->angular_flux_out[4], &buffers->angular_flux_out[5], &buffers->angular_flux_out[6], &buffers->angular_flux_out[7], &buffers->velocity_delta,&buffers->quad_weights, &buffers->scat_coeff, &buffers->scalar_flux_moments, (size_t) local[0], 1,&scalar_flux_moments_event);
+  size_t m_offset2[3]={0,0,0};
+   err =meta_gen_opencl_outer_zero_and_others_reduce_flux_moments(context->queue, global, local, m_offset2,rankinfo->nx,  rankinfo->ny,  rankinfo->nz,  problem->nang,  problem->ng, problem->cmom, &buffers->angular_flux_in[0],  &buffers->angular_flux_in[1],&buffers->angular_flux_in[2], &buffers->angular_flux_in[3], &buffers->angular_flux_in[4], &buffers->angular_flux_in[5], &buffers->angular_flux_in[6], &buffers->angular_flux_in[7], &buffers->angular_flux_out[0], &buffers->angular_flux_out[1], &buffers->angular_flux_out[2], &buffers->angular_flux_out[3], &buffers->angular_flux_out[4], &buffers->angular_flux_out[5], &buffers->angular_flux_out[6], &buffers->angular_flux_out[7], &buffers->velocity_delta,&buffers->quad_weights, &buffers->scat_coeff, &buffers->scalar_flux_moments, (size_t) local[0], 1,&scalar_flux_moments_event);
 
 
 
