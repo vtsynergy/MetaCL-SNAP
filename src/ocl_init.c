@@ -109,8 +109,8 @@ FILE * f = fopen(#name".aocx", "r"); \
     check_ocl(build_err, "Building program");
 	*/
     
-    clBinaryProg(calc_velocity_delta);
-    cl_int build_err = clBuildProgram(calc_velocity_delta, 1, &context->device, options, NULL, NULL);
+    clBinaryProg(outer_zero_and_others);
+    cl_int build_err = clBuildProgram(outer_zero_and_others, 1, &context->device, options, NULL, NULL);
      if (build_err == CL_BUILD_PROGRAM_FAILURE)
     {
         size_t log_size;
@@ -124,63 +124,68 @@ FILE * f = fopen(#name".aocx", "r"); \
     } 
 
     // Create the kernels
-    context->kernels.calc_velocity_delta = clCreateKernel(calc_velocity_delta, "calc_velocity_delta", &err);  
+    context->kernels.calc_velocity_delta = clCreateKernel(outer_zero_and_others, "calc_velocity_delta", &err);  
     check_ocl(err, "Creating velocity delta kernel");
   
-     clBinaryProg(calc_dd_coeff);
-   build_err = clBuildProgram(calc_dd_coeff, 1, &context->device, options, NULL, NULL);
-    context->kernels.calc_dd_coeff = clCreateKernel(calc_dd_coeff, "calc_dd_coeff", &err);
+     //clBinaryProg(calc_dd_coeff);
+   //build_err = clBuildProgram(calc_dd_coeff, 1, &context->device, options, NULL, NULL);
+    context->kernels.calc_dd_coeff = clCreateKernel(outer_zero_and_others, "calc_dd_coeff", &err);
     check_ocl(err, "Creating diamond difference constants kernel");
   
   
   
   
-     clBinaryProg(calc_denominator);
-    build_err = clBuildProgram(calc_denominator, 1, &context->device, options, NULL, NULL);  
-    context->kernels.calc_denominator = clCreateKernel(calc_denominator, "calc_denominator", &err);
+     //clBinaryProg(calc_denominator);
+    //build_err = clBuildProgram(calc_denominator, 1, &context->device, options, NULL, NULL);  
+    context->kernels.calc_denominator = clCreateKernel(outer_zero_and_others, "calc_denominator", &err);
     check_ocl(err, "Creating denominator kernel");
   
   
   
-     clBinaryProg(zero_buffer);
-     build_err = clBuildProgram(zero_buffer, 1, &context->device, options, NULL, NULL);
-    context->kernels.zero_buffer = clCreateKernel(zero_buffer, "zero_buffer", &err);
+     //clBinaryProg(zero_buffer);
+     //build_err = clBuildProgram(zero_buffer, 1, &context->device, options, NULL, NULL);
+    context->kernels.zero_buffer = clCreateKernel(outer_zero_and_others, "zero_buffer", &err);
     check_ocl(err, "Creating buffer zeroing kernel");
   
   
+    //clBinaryProg(reduce_flux_moments);
+     //build_err = clBuildProgram(reduce_flux_moments, 1, &context->device, options, NULL, NULL);
+    context->kernels.reduce_flux_moments = clCreateKernel(outer_zero_and_others, "reduce_flux_moments", &err);
+    check_ocl(err, "Creating scalar flux moments reduction kernel");
+
+
   
-  
-     clBinaryProg(outer_source);
-     build_err = clBuildProgram(outer_source, 1, &context->device, options, NULL, NULL);
-    context->kernels.outer_source = clCreateKernel(outer_source, "calc_outer_source", &err);
+     //clBinaryProg(outer_source);
+     //build_err = clBuildProgram(outer_source, 1, &context->device, options, NULL, NULL);
+    context->kernels.outer_source = clCreateKernel(outer_zero_and_others, "calc_outer_source", &err);
     check_ocl(err, "Creating outer source kernel");
   
   
-     clBinaryProg(inner_source);
-     build_err = clBuildProgram(inner_source, 1, &context->device, options, NULL, NULL);
-    context->kernels.inner_source = clCreateKernel(inner_source, "calc_inner_source", &err);
+
+     
+
+     clBinaryProg(sweep_zero_inner_reducef);
+     build_err = clBuildProgram(sweep_zero_inner_reducef, 1, &context->device, options, NULL, NULL);
+    context->kernels.inner_source = clCreateKernel(sweep_zero_inner_reducef, "calc_inner_source", &err);
     check_ocl(err, "Creating inner source kernel");
   
   
   
-     clBinaryProg(sweep_plane);
-    build_err = clBuildProgram(sweep_plane, 1, &context->device, options, NULL, NULL);
-    context->kernels.sweep_plane = clCreateKernel(sweep_plane, "sweep_plane", &err);
+     //clBinaryProg(sweep_plane);
+    //build_err = clBuildProgram(sweep_plane, 1, &context->device, options, NULL, NULL);
+    context->kernels.sweep_plane = clCreateKernel(sweep_zero_inner_reducef, "sweep_plane", &err);
     check_ocl(err, "Creating sweep plane kernel");
   
   
   
-     clBinaryProg(reduce_flux);
-     build_err = clBuildProgram(reduce_flux, 1, &context->device, options, NULL, NULL);
-    context->kernels.reduce_flux = clCreateKernel(reduce_flux, "reduce_flux", &err);
+     //clBinaryProg(reduce_flux);
+     //build_err = clBuildProgram(reduce_flux, 1, &context->device, options, NULL, NULL);
+    context->kernels.reduce_flux = clCreateKernel(sweep_zero_inner_reducef, "reduce_flux", &err);
     check_ocl(err, "Creating scalar flux reduction kernel");
   
+    context->kernels.zero_buffer_inner = clCreateKernel(sweep_zero_inner_reducef, "zero_buffer", &err);
+    check_ocl(err, "Creating buffer zeroing kernel");
   
-     clBinaryProg(reduce_flux_moments);
-     build_err = clBuildProgram(reduce_flux_moments, 1, &context->device, options, NULL, NULL);
-    context->kernels.reduce_flux_moments = clCreateKernel(reduce_flux_moments, "reduce_flux_moments", &err);
-    check_ocl(err, "Creating scalar flux moments reduction kernel");
-
 }
 
 void release_context(struct context * context)

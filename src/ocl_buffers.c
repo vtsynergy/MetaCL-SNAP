@@ -175,6 +175,29 @@ void allocate_buffers(
 }
 
 
+void zero_buffer_inner(struct context * context, cl_mem buffer, size_t offset, size_t size)
+{
+    cl_int err;cl_event temp2;
+    clFinish(context->queue);
+    clFinish(context->copy_queue);
+   
+    clock_gettime(CLOCK_REALTIME, &start);
+    err = clSetKernelArg(context->kernels.zero_buffer_inner, 0, sizeof(cl_mem), &buffer);
+    check_ocl(err, "Setting buffer zero kernel argument");
+    err = clEnqueueNDRangeKernel(context->queue,
+        context->kernels.zero_buffer_inner,
+        1, &offset, &size, NULL, 0, NULL, &temp2);
+      clFinish(context->queue);
+    clock_gettime(CLOCK_REALTIME, &end);
+    ker_launch_over[8]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
+    err = clGetEventProfilingInfo(temp2,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);
+    err = clGetEventProfilingInfo(temp2,CL_PROFILING_COMMAND_END,sizeof(cl_ulong), &end_time,&return_bytes);
+    ker_exec_time[8]+=(double)(end_time-start_time)/BILLION;
+    temp2=NULL;
+    check_ocl(err, "Enqueueing buffer zero kernel");
+    ker_call_nums[8]++;
+}
+
 void zero_buffer(struct context * context, cl_mem buffer, size_t offset, size_t size)
 {
     cl_int err;cl_event temp2;

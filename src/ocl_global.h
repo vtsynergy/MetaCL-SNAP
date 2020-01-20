@@ -27,6 +27,7 @@ struct kernels
     cl_kernel outer_source;
     cl_kernel inner_source;
     cl_kernel sweep_plane;
+    cl_kernel zero_buffer_inner;
     cl_kernel reduce_flux;
     cl_kernel reduce_flux_moments;
     /** @} */
