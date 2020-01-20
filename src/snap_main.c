@@ -242,7 +242,7 @@ int main(int argc, char **argv)
                         for (int kstep = -1; kstep < 2; kstep += 2)
                         {
                             // Zero the z buffer every octant - we just do KBA
-                            zero_buffer(&context, buffers.flux_k, 0, problem.nang*problem.ng*rankinfo.nx*rankinfo.ny);
+                            zero_buffer_inner(&context, buffers.flux_k, 0, problem.nang*problem.ng*rankinfo.nx*rankinfo.ny);
 
 
                             for (unsigned int z_pos = 0; z_pos < rankinfo.nz; z_pos += problem.chunk)
