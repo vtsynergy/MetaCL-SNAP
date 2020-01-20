@@ -258,7 +258,7 @@ int main(int argc, char **argv)
                         for (int kstep = -1; kstep < 2; kstep += 2)
                         {
                             // Zero the z buffer every octant - we just do KBA
-                            zero_buffer(&context, buffers.flux_k, 0, problem.nang*problem.ng*rankinfo.nx*rankinfo.ny);
+                            zero_buffer_inner(&context, buffers.flux_k, 0, problem.nang*problem.ng*rankinfo.nx*rankinfo.ny);
 
 
                             for (unsigned int z_pos = 0; z_pos < rankinfo.nz; z_pos += problem.chunk)
@@ -418,7 +418,7 @@ int main(int argc, char **argv)
      printf("Kernel_Scalar_flux_NDRange_time: %lf\nKernel_Scalar_flux_Event_Based : %lf\nKernel_Scalar_flux_Launch_Overhead: %lf\nKernel_Scalar_flux_Times_called %d\n",wctime[5][it],ketime[5][it],wctime[5][it]-ketime[5][it],times[5][it]);
      printf("Kernel_Scalar_flux_moment_NDRange_time: %lf\nKernel_Scalar_flux_moment_Event_Based : %lf\nKernel_Scalar_flux_moment_Launch_Overhead: %lf\nKernel_Scalar_flux_moment_Times_called  %d\n",wctime[6][it],ketime[6][it],wctime[6][it]-ketime[6][it],times[6][it]);
      printf("Kernel_Sweep_NDRange_time: %lf\nKernel_Sweep_Event_Based : %lf\nKernel_Sweep_Launch_Overhead: %lf\nKernel_Sweep_Times_called %d\n",wctime[7][it],ketime[7][it],wctime[7][it]-ketime[7][it],times[7][it]);
-     printf("Kernel_Zero_buffer_NDRange time: %lf\nKernel_Zero_buffer_Event_Based : %lf\nKernel_Zero_buffer_Launch_Overhead: %lf\nKernel_Zero_buffer_Times_called %d\n",wctime[8][it],ketime[8][it],wctime[8][it]-ketime[8][it],times[8][it]);
+     printf("Kernel_Zero_buffer_NDRange_time: %lf\nKernel_Zero_buffer_Event_Based : %lf\nKernel_Zero_buffer_Launch_Overhead: %lf\nKernel_Zero_buffer_Times_called %d\n",wctime[8][it],ketime[8][it],wctime[8][it]-ketime[8][it],times[8][it]);
 	printf("************************\n\n");
      }
     return EXIT_SUCCESS;

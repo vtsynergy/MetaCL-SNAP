@@ -176,6 +176,7 @@ void allocate_buffers(
 }
 
 
+
 void zero_buffer(struct context * context, cl_mem buffer, size_t offset, size_t size)
 {
     cl_int err;cl_event temp2;
@@ -189,7 +190,34 @@ void zero_buffer(struct context * context, cl_mem buffer, size_t offset, size_t 
     
     //err = clEnqueueNDRangeKernel(context->queue,context->kernels.zero_buffer,1, &offset, &size, NULL, 0, NULL, NULL);
     clock_gettime(CLOCK_REALTIME, &start);
-    err = meta_gen_opencl_zero_buffer_zero_buffer(context->queue, global, local, enq_off,&buffer, 0, &temp2);
+    err = meta_gen_opencl_outer_zero_and_others_zero_buffer(context->queue, global, local, enq_off,&buffer, 0, &temp2);
+    clock_gettime(CLOCK_REALTIME, &end);
+    ker_launch_over[8]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
+    err = clGetEventProfilingInfo(temp2,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);
+    err = clGetEventProfilingInfo(temp2,CL_PROFILING_COMMAND_END,sizeof(cl_ulong), &end_time,&return_bytes);
+    ker_exec_time[8]+=(double)(end_time-start_time)/BILLION;
+    temp2=NULL;
+    check_ocl(err, "Enqueueing buffer zero kernel");
+    ker_call_nums[8]++;
+}
+
+
+
+
+void zero_buffer_inner(struct context * context, cl_mem buffer, size_t offset, size_t size)
+{
+    cl_int err;cl_event temp2;
+    size_t enq_off[3]={offset,0,0};
+    //err = clSetKernelArg(context->kernels.zero_buffer, 0, sizeof(cl_mem), &buffer);
+    //check_ocl(err, "Setting buffer zero kernel argument");
+    size_t global[3] = {size,1,1};
+    size_t local[3] = {0,0,0};
+     err=clFinish(context->queue);
+    err=clFinish(context->copy_queue);
+    
+    //err = clEnqueueNDRangeKernel(context->queue,context->kernels.zero_buffer,1, &offset, &size, NULL, 0, NULL, NULL);
+    clock_gettime(CLOCK_REALTIME, &start);
+    err = meta_gen_opencl_sweep_zero_inner_reducef_zero_buffer(context->queue, global, local, enq_off,&buffer, 0, &temp2);
     clock_gettime(CLOCK_REALTIME, &end);
     ker_launch_over[8]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
     err = clGetEventProfilingInfo(temp2,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);
