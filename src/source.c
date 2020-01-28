@@ -41,7 +41,7 @@ void compute_outer_source(
     
    size_t global[3] = {rankinfo->nx, rankinfo->ny, rankinfo->nz};
     size_t local[3] = {0,0,0};clock_gettime(CLOCK_REALTIME, &start);
-    err = meta_gen_opencl_outer_zero_and_others_calc_outer_source(context->queue, global, local, null_offset,rankinfo->nx, rankinfo->ny, rankinfo->nz, problem->ng, problem->cmom, problem->nmom, &buffers->fixed_source, &buffers->scattering_matrix, &buffers->scalar_flux, &buffers->scalar_flux_moments, &buffers->outer_source, 0, &outer_source_event);
+    err = metacl_outer_zero_and_others_calc_outer_source(context->queue, global, local, NULL, 0, &outer_source_event,rankinfo->nx, rankinfo->ny, rankinfo->nz, problem->ng, problem->cmom, problem->nmom, &buffers->fixed_source, &buffers->scattering_matrix, &buffers->scalar_flux, &buffers->scalar_flux_moments, &buffers->outer_source);
 clock_gettime(CLOCK_REALTIME, &end);
     ker_launch_over[0]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
     err = clGetEventProfilingInfo(outer_source_event,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);
@@ -83,7 +83,7 @@ void compute_inner_source(
     err=clFinish(context->copy_queue);
    size_t global[3] = {rankinfo->nx, rankinfo->ny, rankinfo->nz};
     size_t local[3] = {0,0,0};clock_gettime(CLOCK_REALTIME, &start);
-    err = meta_gen_opencl_sweep_zero_inner_reducef_calc_inner_source(context->queue, global, local, null_offset,rankinfo->nx, rankinfo->ny, rankinfo->nz, problem->ng, problem->cmom, problem->nmom, &buffers->outer_source, &buffers->scattering_matrix, &buffers->scalar_flux, &buffers->scalar_flux_moments, &buffers->inner_source, 0, &inner_source_event);
+    err = metacl_sweep_zero_inner_reducef_calc_inner_source(context->queue, global, local, NULL, 0, &inner_source_event,rankinfo->nx, rankinfo->ny, rankinfo->nz, problem->ng, problem->cmom, problem->nmom, &buffers->outer_source, &buffers->scattering_matrix, &buffers->scalar_flux, &buffers->scalar_flux_moments, &buffers->inner_source);
     clock_gettime(CLOCK_REALTIME, &end);
     ker_launch_over[1]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
     err = clGetEventProfilingInfo(inner_source_event,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);

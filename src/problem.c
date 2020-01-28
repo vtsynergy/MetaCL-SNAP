@@ -285,7 +285,7 @@ void init_velocity_delta(
   
    clock_gettime(CLOCK_REALTIME, &start);
   
-  err = meta_gen_opencl_outer_zero_and_others_calc_velocity_delta(context->queue, global, local, null_offset,&buffers->velocities, problem->dt, &buffers->velocity_delta, 0, &velocity_delta_event);
+  err = metacl_outer_zero_and_others_calc_velocity_delta(context->queue, global, local, NULL,0, &velocity_delta_event,&buffers->velocities, problem->dt, &buffers->velocity_delta);
     clock_gettime(CLOCK_REALTIME, &end);
     ker_launch_over[2]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
     err = clGetEventProfilingInfo(velocity_delta_event,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);
@@ -327,7 +327,7 @@ void calculate_dd_coefficients(
 
     clock_gettime(CLOCK_REALTIME, &start);
     
- err= meta_gen_opencl_outer_zero_and_others_calc_dd_coeff(context->queue, global, local,null_offset, problem->dx, problem->dy, problem->dz, &buffers->eta, &buffers->xi, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k, 0, &temp3);
+ err= metacl_outer_zero_and_others_calc_dd_coeff(context->queue, global, local,NULL, 0, &temp3, problem->dx, problem->dy, problem->dz, &buffers->eta, &buffers->xi, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k);
     clock_gettime(CLOCK_REALTIME, &end);
     ker_launch_over[3]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
     err = clGetEventProfilingInfo(temp3,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);
@@ -373,7 +373,7 @@ void calculate_denominator(
     size_t global[3] = {problem->nang, problem->ng,1};
     size_t local[3] ={0,0,0};clock_gettime(CLOCK_REALTIME, &start);
    
-    err= meta_gen_opencl_outer_zero_and_others_calc_denominator(context->queue, global, local, null_offset,rankinfo->nx, rankinfo->ny, rankinfo->nz, problem->nang, problem->ng, &buffers->mat_cross_section, &buffers->velocity_delta, &buffers->mu, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k, &buffers->denominator, 0, &denominator_event);
+    err= metacl_outer_zero_and_others_calc_denominator(context->queue, global, local, NULL,0, &denominator_event,rankinfo->nx, rankinfo->ny, rankinfo->nz, problem->nang, problem->ng, &buffers->mat_cross_section, &buffers->velocity_delta, &buffers->mu, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k, &buffers->denominator);
     clock_gettime(CLOCK_REALTIME, &end);
     ker_launch_over[4]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
     err = clGetEventProfilingInfo(denominator_event,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);

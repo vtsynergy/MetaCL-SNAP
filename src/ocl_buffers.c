@@ -190,7 +190,7 @@ void zero_buffer(struct context * context, cl_mem buffer, size_t offset, size_t 
     
     //err = clEnqueueNDRangeKernel(context->queue,context->kernels.zero_buffer,1, &offset, &size, NULL, 0, NULL, NULL);
     clock_gettime(CLOCK_REALTIME, &start);
-    err = meta_gen_opencl_outer_zero_and_others_zero_buffer(context->queue, global, local, enq_off,&buffer, 0, &temp2);
+    err = metacl_outer_zero_and_others_zero_buffer(context->queue, global, local, enq_off, 0, &temp2,&buffer);
     clock_gettime(CLOCK_REALTIME, &end);
     ker_launch_over[8]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
     err = clGetEventProfilingInfo(temp2,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);
@@ -217,7 +217,7 @@ void zero_buffer_inner(struct context * context, cl_mem buffer, size_t offset, s
     
     //err = clEnqueueNDRangeKernel(context->queue,context->kernels.zero_buffer,1, &offset, &size, NULL, 0, NULL, NULL);
     clock_gettime(CLOCK_REALTIME, &start);
-    err = meta_gen_opencl_sweep_zero_inner_reducef_zero_buffer(context->queue, global, local, enq_off,&buffer, 0, &temp2);
+    err = metacl_sweep_zero_inner_reducef_zero_buffer(context->queue, global, local, enq_off, 0, &temp2,&buffer);
     clock_gettime(CLOCK_REALTIME, &end);
     ker_launch_over[8]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
     err = clGetEventProfilingInfo(temp2,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);

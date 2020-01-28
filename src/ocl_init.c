@@ -101,9 +101,9 @@ void init_ocl(struct context * context, const bool multigpu, const int rank)
     //__meta_gen_opencl_reduce_flux_moments_custom_args =options;
     //__meta_gen_opencl_sweep_plane_custom_args =options;
     //__meta_gen_opencl_zero_buffer_custom_args  =options;
-     __meta_gen_opencl_sweep_zero_inner_reducef_custom_args=options;
-     __meta_gen_opencl_outer_zero_and_others_custom_args=options;
-     meta_register_module(&meta_gen_opencl_metacl_module_registry);
+     __metacl_sweep_zero_inner_reducef_custom_args=options;
+    __metacl_outer_zero_and_others_custom_args=options;
+     meta_register_module(&metacl_metacl_module_registry);
     
 //    cl_int build_err = clBuildProgram(context->program, 1, &context->device, options, NULL, NULL);
 //    if (build_err == CL_BUILD_PROGRAM_FAILURE)
@@ -160,6 +160,6 @@ void release_context(struct context * context)
 //    err = clReleaseContext(context->context);
 //    check_ocl(err, "Releasing context");
     
-    meta_deregister_module(&meta_gen_opencl_metacl_module_registry);
+    meta_deregister_module(&metacl_metacl_module_registry);
 
 }
