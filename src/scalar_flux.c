@@ -15,6 +15,7 @@ void compute_scalar_flux(
 
     // get closest power of 2 to nang
     size_t power = 1 << (unsigned int)ceil(log2((double)problem->nang));
+	if (power > 128) power = 128;
 
     const size_t global[] = {power * problem->ng, rankinfo->nx*rankinfo->ny*rankinfo->nz};
     const size_t local[] = {power, 1};
@@ -75,6 +76,7 @@ void compute_scalar_flux_moments(
 
     // get closest power of 2 to nang
     size_t power = 1 << (unsigned int)ceil(log2((double)problem->nang));
+	if (power > 128) power = 128;
 
     const size_t global[] = {power * problem->ng, rankinfo->nx*rankinfo->ny*rankinfo->nz};
     const size_t local[] = {power, 1};
