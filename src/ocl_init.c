@@ -1,8 +1,11 @@
-
 #include "profiler.h"
 #include "ocl_global.h"
 #include "ocl_kernels.h"
+#include "CL/cl.h"
 #include "metamorph.h"
+
+//#include "CL/cl.h"
+//#include "mm_opencl_backend.h"
 #include "metacl_module.h"
 #define MAX_DEVICES 16
 extern int deviceIndex;
