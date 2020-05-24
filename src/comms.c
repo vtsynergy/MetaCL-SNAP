@@ -120,7 +120,7 @@ void recv_boundaries(int z_pos, const int octant, const int istep, const int jst
     if ( (istep == -1 && rankinfo->iub == problem->nx)
         || (istep == 1 && rankinfo->ilb == 0))
     {
-        zero_buffer(context, buffers->flux_i, i_offset, problem->nang*problem->ng*rankinfo->ny*problem->chunk);
+        zero_buffer_inner(context, buffers->flux_i, i_offset, problem->nang*problem->ng*rankinfo->ny*problem->chunk);
     }
     // Otherwise, internal boundary - get data from MPI receives
     else
@@ -159,7 +159,7 @@ void recv_boundaries(int z_pos, const int octant, const int istep, const int jst
     if ( (jstep == -1 && rankinfo->jub == problem->ny)
         || (jstep == 1 && rankinfo->jlb == 0))
     {
-        zero_buffer(context, buffers->flux_j, j_offset, problem->nang*problem->ng*rankinfo->nx*problem->chunk);
+        zero_buffer_inner(context, buffers->flux_j, j_offset, problem->nang*problem->ng*rankinfo->nx*problem->chunk);
     }
     else
     {
