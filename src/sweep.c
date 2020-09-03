@@ -110,7 +110,7 @@ void sweep_plane(
  //       2, 0, global, NULL,
  //       0, NULL, NULL);
     size_t m_offset[3]={0,0,0};
-    err = meta_gen_opencl_sweep_zero_inner_reducef_sweep_plane(context->queue, global, local, m_offset,rankinfo->nx, rankinfo->ny, rankinfo->nz, problem->nang, problem->ng, problem->cmom,istep, jstep, kstep, octant, z_pos, &buffers->planes[plane], &buffers->inner_source, &buffers->scat_coeff, &buffers-> dd_i, &buffers->dd_j, &buffers->dd_k, &buffers->mu, &buffers->velocity_delta, &buffers->mat_cross_section, &buffers->denominator, &buffers->angular_flux_in[octant], &buffers->flux_i, &buffers->flux_j, &buffers->flux_k, &buffers->angular_flux_out[octant], 1, NULL);
+    err = metacl_sweep_zero_inner_reducef_sweep_plane(context->queue, global, local, NULL, 1, NULL,rankinfo->nx, rankinfo->ny, rankinfo->nz, problem->nang, problem->ng, problem->cmom,istep, jstep, kstep, octant, z_pos, &buffers->planes[plane], &buffers->inner_source, &buffers->scat_coeff, &buffers-> dd_i, &buffers->dd_j, &buffers->dd_k, &buffers->mu, &buffers->velocity_delta, &buffers->mat_cross_section, &buffers->denominator, &buffers->angular_flux_in[octant], &buffers->flux_i, &buffers->flux_j, &buffers->flux_k, &buffers->angular_flux_out[octant]);
     check_ocl(err, "Enqueue plane sweep kernel");
 }
 

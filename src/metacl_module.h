@@ -1,8 +1,10 @@
-extern const char * __meta_gen_opencl_outer_zero_and_others_custom_args;
-extern const char * __meta_gen_opencl_sweep_zero_inner_reducef_custom_args;
-struct __meta_gen_opencl_metacl_module_frame;
-struct __meta_gen_opencl_metacl_module_frame {
-  struct __meta_gen_opencl_metacl_module_frame * next_frame;
+
+extern const char * __metacl_outer_zero_and_others_custom_args;
+
+extern const char * __metacl_sweep_zero_inner_reducef_custom_args;
+struct __metacl_metacl_module_frame;
+struct __metacl_metacl_module_frame {
+  struct __metacl_metacl_module_frame * next_frame;
   cl_device_id device;
   cl_context context;
   cl_command_queue queue;
@@ -25,22 +27,218 @@ struct __meta_gen_opencl_metacl_module_frame {
   cl_kernel sweep_zero_inner_reducef_calc_inner_source_kernel;
   cl_kernel sweep_zero_inner_reducef_zero_buffer_kernel;
 };
+struct __metacl_metacl_module_frame * __metacl_metacl_module_lookup_frame(cl_command_queue queue);
 #ifdef __cplusplus
 extern "C" {
 #endif
-a_module_record * meta_gen_opencl_metacl_module_registry(a_module_record * record);
-void meta_gen_opencl_metacl_module_init();
-void meta_gen_opencl_metacl_module_deinit();
-cl_int meta_gen_opencl_outer_zero_and_others_reduce_flux_moments(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], size_t (*meta_offset)[3], cl_uint nx, cl_uint ny, cl_uint nz, cl_uint nang, cl_uint ng, cl_uint cmom, cl_mem * angular_flux_in_0, cl_mem * angular_flux_in_1, cl_mem * angular_flux_in_2, cl_mem * angular_flux_in_3, cl_mem * angular_flux_in_4, cl_mem * angular_flux_in_5, cl_mem * angular_flux_in_6, cl_mem * angular_flux_in_7, cl_mem * angular_flux_out_0, cl_mem * angular_flux_out_1, cl_mem * angular_flux_out_2, cl_mem * angular_flux_out_3, cl_mem * angular_flux_out_4, cl_mem * angular_flux_out_5, cl_mem * angular_flux_out_6, cl_mem * angular_flux_out_7, cl_mem * velocity_delta, cl_mem * quad_weights, cl_mem * scat_coeff, cl_mem * scalar_flux_moments, size_t local_scalar_num_local_elems, int async, cl_event * event);
-cl_int meta_gen_opencl_outer_zero_and_others_calc_outer_source(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], size_t (*meta_offset)[3], cl_uint nx, cl_uint ny, cl_uint nz, cl_uint ng, cl_uint cmom, cl_uint nmom, cl_mem * fixed_source, cl_mem * scattering_matrix, cl_mem * scalar_flux, cl_mem * scalar_flux_moments, cl_mem * outer_source, int async, cl_event * event);
-cl_int meta_gen_opencl_outer_zero_and_others_calc_dd_coeff(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], size_t (*meta_offset)[3], cl_double dx, cl_double dy, cl_double dz, cl_mem * eta, cl_mem * xi, cl_mem * dd_i, cl_mem * dd_j, cl_mem * dd_k, int async, cl_event * event);
-cl_int meta_gen_opencl_outer_zero_and_others_calc_velocity_delta(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], size_t (*meta_offset)[3], cl_mem * velocities, cl_double dt, cl_mem * velocity_delta, int async, cl_event * event);
-cl_int meta_gen_opencl_outer_zero_and_others_calc_denominator(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], size_t (*meta_offset)[3], cl_uint nx, cl_uint ny, cl_uint nz, cl_uint nang, cl_uint ng, cl_mem * mat_cross_section, cl_mem * velocity_delta, cl_mem * mu, cl_mem * dd_i, cl_mem * dd_j, cl_mem * dd_k, cl_mem * denominator, int async, cl_event * event);
-cl_int meta_gen_opencl_outer_zero_and_others_zero_buffer(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], size_t (*meta_offset)[3], cl_mem * buffer, int async, cl_event * event);
-cl_int meta_gen_opencl_sweep_zero_inner_reducef_sweep_plane(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], size_t (*meta_offset)[3], cl_uint nx, cl_uint ny, cl_uint nz, cl_uint nang, cl_uint ng, cl_uint cmom, cl_int istep, cl_int jstep, cl_int kstep, cl_uint oct, cl_uint z_pos, cl_mem * plane, cl_mem * source, cl_mem * scat_coeff, cl_mem * dd_i, cl_mem * dd_j, cl_mem * dd_k, cl_mem * mu, cl_mem * velocity_delta, cl_mem * mat_cross_section, cl_mem * denominator, cl_mem * angular_flux_in, cl_mem * flux_i, cl_mem * flux_j, cl_mem * flux_k, cl_mem * angular_flux_out, int async, cl_event * event);
-cl_int meta_gen_opencl_sweep_zero_inner_reducef_reduce_flux(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], size_t (*meta_offset)[3], cl_uint nx, cl_uint ny, cl_uint nz, cl_uint nang, cl_uint ng, cl_mem * angular_flux_in_0, cl_mem * angular_flux_in_1, cl_mem * angular_flux_in_2, cl_mem * angular_flux_in_3, cl_mem * angular_flux_in_4, cl_mem * angular_flux_in_5, cl_mem * angular_flux_in_6, cl_mem * angular_flux_in_7, cl_mem * angular_flux_out_0, cl_mem * angular_flux_out_1, cl_mem * angular_flux_out_2, cl_mem * angular_flux_out_3, cl_mem * angular_flux_out_4, cl_mem * angular_flux_out_5, cl_mem * angular_flux_out_6, cl_mem * angular_flux_out_7, cl_mem * velocity_delta, cl_mem * quad_weights, cl_mem * scalar_flux, size_t local_scalar_num_local_elems, int async, cl_event * event);
-cl_int meta_gen_opencl_sweep_zero_inner_reducef_calc_inner_source(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], size_t (*meta_offset)[3], cl_uint nx, cl_uint ny, cl_uint nz, cl_uint ng, cl_uint cmom, cl_uint nmom, cl_mem * outer_source, cl_mem * scattering_matrix, cl_mem * scalar_flux, cl_mem * scalar_flux_moments, cl_mem * inner_source, int async, cl_event * event);
-cl_int meta_gen_opencl_sweep_zero_inner_reducef_zero_buffer(cl_command_queue queue, size_t (*grid_size)[3], size_t (*block_size)[3], size_t (*meta_offset)[3], cl_mem * buffer, int async, cl_event * event);
+a_module_record * metacl_metacl_module_registry(a_module_record * record);
+void metacl_metacl_module_init();
+void metacl_metacl_module_deinit();
+/** Automatically-generated by MetaCL
+\param queue the cl_command_queue the kernel is being prepared to run on (to lookup and/or enqueue associated cl_kernel)
+\param global_size a size_t[3] providing the global number of workitems in the X, Y, Z dimensions\param local_size a size_t[3] providing the workgroup size in the X, Y, Z dimensions
+\param meta_offset the NDRange offset, NULL if none
+\param async whether the kernel should run asynchronously
+\param event returns the cl_event corresponding to the kernel launch if run asynchronously
+\param nx scalar parameter of type "cl_uint"
+\param ny scalar parameter of type "cl_uint"
+\param nz scalar parameter of type "cl_uint"
+\param nang scalar parameter of type "cl_uint"
+\param ng scalar parameter of type "cl_uint"
+\param cmom scalar parameter of type "cl_uint"
+\param angular_flux_in_0 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_in_1 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_in_2 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_in_3 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_in_4 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_in_5 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_in_6 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_in_7 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_out_0 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_out_1 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_out_2 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_out_3 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_out_4 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_out_5 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_out_6 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_out_7 a cl_mem buffer, must internally store cl_double types
+\param velocity_delta a cl_mem buffer, must internally store cl_double types
+\param quad_weights a cl_mem buffer, must internally store cl_double types
+\param scat_coeff a cl_mem buffer, must internally store cl_double types
+\param scalar_flux_moments a cl_mem buffer, must internally store cl_double types
+\param local_scalar_num_local_elems allocate __local memory space for this many cl_double elements
+ */
+cl_int metacl_outer_zero_and_others_reduce_flux_moments(cl_command_queue queue, size_t (*global_size)[3], size_t (*local_size)[3], size_t (*meta_offset)[3], int async, cl_event * event, cl_uint nx, cl_uint ny, cl_uint nz, cl_uint nang, cl_uint ng, cl_uint cmom, cl_mem * angular_flux_in_0, cl_mem * angular_flux_in_1, cl_mem * angular_flux_in_2, cl_mem * angular_flux_in_3, cl_mem * angular_flux_in_4, cl_mem * angular_flux_in_5, cl_mem * angular_flux_in_6, cl_mem * angular_flux_in_7, cl_mem * angular_flux_out_0, cl_mem * angular_flux_out_1, cl_mem * angular_flux_out_2, cl_mem * angular_flux_out_3, cl_mem * angular_flux_out_4, cl_mem * angular_flux_out_5, cl_mem * angular_flux_out_6, cl_mem * angular_flux_out_7, cl_mem * velocity_delta, cl_mem * quad_weights, cl_mem * scat_coeff, cl_mem * scalar_flux_moments, size_t local_scalar_num_local_elems);
+/** Automatically-generated by MetaCL
+\param queue the cl_command_queue the kernel is being prepared to run on (to lookup and/or enqueue associated cl_kernel)
+\param global_size a size_t[3] providing the global number of workitems in the X, Y, Z dimensions\param local_size a size_t[3] providing the workgroup size in the X, Y, Z dimensions
+\param meta_offset the NDRange offset, NULL if none
+\param async whether the kernel should run asynchronously
+\param event returns the cl_event corresponding to the kernel launch if run asynchronously
+\param nx scalar parameter of type "cl_uint"
+\param ny scalar parameter of type "cl_uint"
+\param nz scalar parameter of type "cl_uint"
+\param ng scalar parameter of type "cl_uint"
+\param cmom scalar parameter of type "cl_uint"
+\param nmom scalar parameter of type "cl_uint"
+\param fixed_source a cl_mem buffer, must internally store cl_double types
+\param scattering_matrix a cl_mem buffer, must internally store cl_double types
+\param scalar_flux a cl_mem buffer, must internally store cl_double types
+\param scalar_flux_moments a cl_mem buffer, must internally store cl_double types
+\param outer_source a cl_mem buffer, must internally store cl_double types
+ */
+cl_int metacl_outer_zero_and_others_calc_outer_source(cl_command_queue queue, size_t (*global_size)[3], size_t (*local_size)[3], size_t (*meta_offset)[3], int async, cl_event * event, cl_uint nx, cl_uint ny, cl_uint nz, cl_uint ng, cl_uint cmom, cl_uint nmom, cl_mem * fixed_source, cl_mem * scattering_matrix, cl_mem * scalar_flux, cl_mem * scalar_flux_moments, cl_mem * outer_source);
+/** Automatically-generated by MetaCL
+\param queue the cl_command_queue the kernel is being prepared to run on (to lookup and/or enqueue associated cl_kernel)
+\param global_size a size_t[3] providing the global number of workitems in the X, Y, Z dimensions\param local_size a size_t[3] providing the workgroup size in the X, Y, Z dimensions
+\param meta_offset the NDRange offset, NULL if none
+\param async whether the kernel should run asynchronously
+\param event returns the cl_event corresponding to the kernel launch if run asynchronously
+\param dx scalar parameter of type "cl_double"
+\param dy scalar parameter of type "cl_double"
+\param dz scalar parameter of type "cl_double"
+\param eta a cl_mem buffer, must internally store cl_double types
+\param xi a cl_mem buffer, must internally store cl_double types
+\param dd_i a cl_mem buffer, must internally store cl_double types
+\param dd_j a cl_mem buffer, must internally store cl_double types
+\param dd_k a cl_mem buffer, must internally store cl_double types
+ */
+cl_int metacl_outer_zero_and_others_calc_dd_coeff(cl_command_queue queue, size_t (*global_size)[3], size_t (*local_size)[3], size_t (*meta_offset)[3], int async, cl_event * event, cl_double dx, cl_double dy, cl_double dz, cl_mem * eta, cl_mem * xi, cl_mem * dd_i, cl_mem * dd_j, cl_mem * dd_k);
+/** Automatically-generated by MetaCL
+\param queue the cl_command_queue the kernel is being prepared to run on (to lookup and/or enqueue associated cl_kernel)
+\param global_size a size_t[3] providing the global number of workitems in the X, Y, Z dimensions\param local_size a size_t[3] providing the workgroup size in the X, Y, Z dimensions
+\param meta_offset the NDRange offset, NULL if none
+\param async whether the kernel should run asynchronously
+\param event returns the cl_event corresponding to the kernel launch if run asynchronously
+\param velocities a cl_mem buffer, must internally store cl_double types
+\param dt scalar parameter of type "cl_double"
+\param velocity_delta a cl_mem buffer, must internally store cl_double types
+ */
+cl_int metacl_outer_zero_and_others_calc_velocity_delta(cl_command_queue queue, size_t (*global_size)[3], size_t (*local_size)[3], size_t (*meta_offset)[3], int async, cl_event * event, cl_mem * velocities, cl_double dt, cl_mem * velocity_delta);
+/** Automatically-generated by MetaCL
+\param queue the cl_command_queue the kernel is being prepared to run on (to lookup and/or enqueue associated cl_kernel)
+\param global_size a size_t[3] providing the global number of workitems in the X, Y, Z dimensions\param local_size a size_t[3] providing the workgroup size in the X, Y, Z dimensions
+\param meta_offset the NDRange offset, NULL if none
+\param async whether the kernel should run asynchronously
+\param event returns the cl_event corresponding to the kernel launch if run asynchronously
+\param nx scalar parameter of type "cl_uint"
+\param ny scalar parameter of type "cl_uint"
+\param nz scalar parameter of type "cl_uint"
+\param nang scalar parameter of type "cl_uint"
+\param ng scalar parameter of type "cl_uint"
+\param mat_cross_section a cl_mem buffer, must internally store cl_double types
+\param velocity_delta a cl_mem buffer, must internally store cl_double types
+\param mu a cl_mem buffer, must internally store cl_double types
+\param dd_i a cl_mem buffer, must internally store cl_double types
+\param dd_j a cl_mem buffer, must internally store cl_double types
+\param dd_k a cl_mem buffer, must internally store cl_double types
+\param denominator a cl_mem buffer, must internally store cl_double types
+ */
+cl_int metacl_outer_zero_and_others_calc_denominator(cl_command_queue queue, size_t (*global_size)[3], size_t (*local_size)[3], size_t (*meta_offset)[3], int async, cl_event * event, cl_uint nx, cl_uint ny, cl_uint nz, cl_uint nang, cl_uint ng, cl_mem * mat_cross_section, cl_mem * velocity_delta, cl_mem * mu, cl_mem * dd_i, cl_mem * dd_j, cl_mem * dd_k, cl_mem * denominator);
+/** Automatically-generated by MetaCL
+\param queue the cl_command_queue the kernel is being prepared to run on (to lookup and/or enqueue associated cl_kernel)
+\param global_size a size_t[3] providing the global number of workitems in the X, Y, Z dimensions\param local_size a size_t[3] providing the workgroup size in the X, Y, Z dimensions
+\param meta_offset the NDRange offset, NULL if none
+\param async whether the kernel should run asynchronously
+\param event returns the cl_event corresponding to the kernel launch if run asynchronously
+\param buffer a cl_mem buffer, must internally store cl_double types
+ */
+cl_int metacl_outer_zero_and_others_zero_buffer(cl_command_queue queue, size_t (*global_size)[3], size_t (*local_size)[3], size_t (*meta_offset)[3], int async, cl_event * event, cl_mem * buffer);
+/** Automatically-generated by MetaCL
+\param queue the cl_command_queue the kernel is being prepared to run on (to lookup and/or enqueue associated cl_kernel)
+\param global_size a size_t[3] providing the global number of workitems in the X, Y, Z dimensions\param local_size a size_t[3] providing the workgroup size in the X, Y, Z dimensions
+\param meta_offset the NDRange offset, NULL if none
+\param async whether the kernel should run asynchronously
+\param event returns the cl_event corresponding to the kernel launch if run asynchronously
+\param nx scalar parameter of type "cl_uint"
+\param ny scalar parameter of type "cl_uint"
+\param nz scalar parameter of type "cl_uint"
+\param nang scalar parameter of type "cl_uint"
+\param ng scalar parameter of type "cl_uint"
+\param cmom scalar parameter of type "cl_uint"
+\param istep scalar parameter of type "cl_int"
+\param jstep scalar parameter of type "cl_int"
+\param kstep scalar parameter of type "cl_int"
+\param oct scalar parameter of type "cl_uint"
+\param z_pos scalar parameter of type "cl_uint"
+\param plane a cl_mem buffer, must internally store struct cell_id types
+\param source a cl_mem buffer, must internally store cl_double types
+\param scat_coeff a cl_mem buffer, must internally store cl_double types
+\param dd_i a cl_mem buffer, must internally store cl_double types
+\param dd_j a cl_mem buffer, must internally store cl_double types
+\param dd_k a cl_mem buffer, must internally store cl_double types
+\param mu a cl_mem buffer, must internally store cl_double types
+\param velocity_delta a cl_mem buffer, must internally store cl_double types
+\param mat_cross_section a cl_mem buffer, must internally store cl_double types
+\param denominator a cl_mem buffer, must internally store cl_double types
+\param angular_flux_in a cl_mem buffer, must internally store cl_double types
+\param flux_i a cl_mem buffer, must internally store cl_double types
+\param flux_j a cl_mem buffer, must internally store cl_double types
+\param flux_k a cl_mem buffer, must internally store cl_double types
+\param angular_flux_out a cl_mem buffer, must internally store cl_double types
+ */
+cl_int metacl_sweep_zero_inner_reducef_sweep_plane(cl_command_queue queue, size_t (*global_size)[3], size_t (*local_size)[3], size_t (*meta_offset)[3], int async, cl_event * event, cl_uint nx, cl_uint ny, cl_uint nz, cl_uint nang, cl_uint ng, cl_uint cmom, cl_int istep, cl_int jstep, cl_int kstep, cl_uint oct, cl_uint z_pos, cl_mem * plane, cl_mem * source, cl_mem * scat_coeff, cl_mem * dd_i, cl_mem * dd_j, cl_mem * dd_k, cl_mem * mu, cl_mem * velocity_delta, cl_mem * mat_cross_section, cl_mem * denominator, cl_mem * angular_flux_in, cl_mem * flux_i, cl_mem * flux_j, cl_mem * flux_k, cl_mem * angular_flux_out);
+/** Automatically-generated by MetaCL
+\param queue the cl_command_queue the kernel is being prepared to run on (to lookup and/or enqueue associated cl_kernel)
+\param global_size a size_t[3] providing the global number of workitems in the X, Y, Z dimensions\param local_size a size_t[3] providing the workgroup size in the X, Y, Z dimensions
+\param meta_offset the NDRange offset, NULL if none
+\param async whether the kernel should run asynchronously
+\param event returns the cl_event corresponding to the kernel launch if run asynchronously
+\param nx scalar parameter of type "cl_uint"
+\param ny scalar parameter of type "cl_uint"
+\param nz scalar parameter of type "cl_uint"
+\param nang scalar parameter of type "cl_uint"
+\param ng scalar parameter of type "cl_uint"
+\param angular_flux_in_0 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_in_1 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_in_2 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_in_3 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_in_4 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_in_5 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_in_6 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_in_7 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_out_0 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_out_1 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_out_2 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_out_3 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_out_4 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_out_5 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_out_6 a cl_mem buffer, must internally store cl_double types
+\param angular_flux_out_7 a cl_mem buffer, must internally store cl_double types
+\param velocity_delta a cl_mem buffer, must internally store cl_double types
+\param quad_weights a cl_mem buffer, must internally store cl_double types
+\param scalar_flux a cl_mem buffer, must internally store cl_double types
+\param local_scalar_num_local_elems allocate __local memory space for this many cl_double elements
+ */
+cl_int metacl_sweep_zero_inner_reducef_reduce_flux(cl_command_queue queue, size_t (*global_size)[3], size_t (*local_size)[3], size_t (*meta_offset)[3], int async, cl_event * event, cl_uint nx, cl_uint ny, cl_uint nz, cl_uint nang, cl_uint ng, cl_mem * angular_flux_in_0, cl_mem * angular_flux_in_1, cl_mem * angular_flux_in_2, cl_mem * angular_flux_in_3, cl_mem * angular_flux_in_4, cl_mem * angular_flux_in_5, cl_mem * angular_flux_in_6, cl_mem * angular_flux_in_7, cl_mem * angular_flux_out_0, cl_mem * angular_flux_out_1, cl_mem * angular_flux_out_2, cl_mem * angular_flux_out_3, cl_mem * angular_flux_out_4, cl_mem * angular_flux_out_5, cl_mem * angular_flux_out_6, cl_mem * angular_flux_out_7, cl_mem * velocity_delta, cl_mem * quad_weights, cl_mem * scalar_flux, size_t local_scalar_num_local_elems);
+/** Automatically-generated by MetaCL
+\param queue the cl_command_queue the kernel is being prepared to run on (to lookup and/or enqueue associated cl_kernel)
+\param global_size a size_t[3] providing the global number of workitems in the X, Y, Z dimensions\param local_size a size_t[3] providing the workgroup size in the X, Y, Z dimensions
+\param meta_offset the NDRange offset, NULL if none
+\param async whether the kernel should run asynchronously
+\param event returns the cl_event corresponding to the kernel launch if run asynchronously
+\param nx scalar parameter of type "cl_uint"
+\param ny scalar parameter of type "cl_uint"
+\param nz scalar parameter of type "cl_uint"
+\param ng scalar parameter of type "cl_uint"
+\param cmom scalar parameter of type "cl_uint"
+\param nmom scalar parameter of type "cl_uint"
+\param outer_source a cl_mem buffer, must internally store cl_double types
+\param scattering_matrix a cl_mem buffer, must internally store cl_double types
+\param scalar_flux a cl_mem buffer, must internally store cl_double types
+\param scalar_flux_moments a cl_mem buffer, must internally store cl_double types
+\param inner_source a cl_mem buffer, must internally store cl_double types
+ */
+cl_int metacl_sweep_zero_inner_reducef_calc_inner_source(cl_command_queue queue, size_t (*global_size)[3], size_t (*local_size)[3], size_t (*meta_offset)[3], int async, cl_event * event, cl_uint nx, cl_uint ny, cl_uint nz, cl_uint ng, cl_uint cmom, cl_uint nmom, cl_mem * outer_source, cl_mem * scattering_matrix, cl_mem * scalar_flux, cl_mem * scalar_flux_moments, cl_mem * inner_source);
+/** Automatically-generated by MetaCL
+\param queue the cl_command_queue the kernel is being prepared to run on (to lookup and/or enqueue associated cl_kernel)
+\param global_size a size_t[3] providing the global number of workitems in the X, Y, Z dimensions\param local_size a size_t[3] providing the workgroup size in the X, Y, Z dimensions
+\param meta_offset the NDRange offset, NULL if none
+\param async whether the kernel should run asynchronously
+\param event returns the cl_event corresponding to the kernel launch if run asynchronously
+\param buffer a cl_mem buffer, must internally store cl_double types
+ */
+cl_int metacl_sweep_zero_inner_reducef_zero_buffer(cl_command_queue queue, size_t (*global_size)[3], size_t (*local_size)[3], size_t (*meta_offset)[3], int async, cl_event * event, cl_mem * buffer);
 #ifdef __cplusplus
 }
 #endif

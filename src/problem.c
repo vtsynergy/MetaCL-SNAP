@@ -275,8 +275,8 @@ void init_velocity_delta(
     
     size_t global[3] = {problem->ng,1,1};
     size_t local[3] = {0,0,0};
-    size_t m_offset5[3]={0,0,0};
-    err = meta_gen_opencl_outer_zero_and_others_calc_velocity_delta(context->queue, global, local, m_offset5, &buffers->velocities, problem->dt, &buffers->velocity_delta, 1, &velocity_delta_event);
+    //size_t m_offset5[3]={0,0,0};
+    err = metacl_outer_zero_and_others_calc_velocity_delta(context->queue, global, local, NULL, 1, &velocity_delta_event, &buffers->velocities, problem->dt, &buffers->velocity_delta);
     check_ocl(err, "Enqueue velocity delta calculation kernel");
     
 }
@@ -308,8 +308,8 @@ void calculate_dd_coefficients(
     
     size_t global[3] = {problem->nang,1,1};
     size_t local[3] = {0,0,0};
-    size_t m_offset6[3]={0,0,0};
-    err= meta_gen_opencl_outer_zero_and_others_calc_dd_coeff(context->queue, global, local, m_offset6,problem->dx, problem->dy, problem->dz, &buffers->eta, &buffers->xi, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k, 1, NULL);
+    //size_t m_offset6[3]={0,0,0};
+    err= metacl_outer_zero_and_others_calc_dd_coeff(context->queue, global, local, NULL, 1, NULL,problem->dx, problem->dy, problem->dz, &buffers->eta, &buffers->xi, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k);
     check_ocl(err, "Enqueue diamond difference calculation kernel");
 }
 
@@ -346,7 +346,7 @@ void calculate_denominator(
    
     size_t global[3] = {problem->nang, problem->ng,1};
     size_t local[3] ={0,0,0};
- size_t m_offset7[3]={0,0,0};
-    err= meta_gen_opencl_outer_zero_and_others_calc_denominator(context->queue, global, local, m_offset7,rankinfo->nx, rankinfo->ny, rankinfo->nz, problem->nang, problem->ng, &buffers->mat_cross_section, &buffers->velocity_delta, &buffers->mu, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k, &buffers->denominator, 1, &denominator_event);
+ //size_t m_offset7[3]={0,0,0};
+    err= metacl_outer_zero_and_others_calc_denominator(context->queue, global, local, NULL, 1, &denominator_event,rankinfo->nx, rankinfo->ny, rankinfo->nz, problem->nang, problem->ng, &buffers->mat_cross_section, &buffers->velocity_delta, &buffers->mu, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k, &buffers->denominator);
     check_ocl(err, "Enqueue denominator kernel");
 }

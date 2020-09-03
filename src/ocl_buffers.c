@@ -179,7 +179,7 @@ void zero_buffer(struct context * context, cl_mem buffer, size_t offset, size_t 
     size_t global[3] = {size,1,1};
     size_t local[3] = {0,0,0};
     //err = clEnqueueNDRangeKernel(context->queue,context->kernels.zero_buffer,1, &offset, &size, NULL, 0, NULL, NULL);
-    err = meta_gen_opencl_outer_zero_and_others_zero_buffer(context->queue, global, local, &offset, &buffer, 1, NULL);
+    err = metacl_outer_zero_and_others_zero_buffer(context->queue, global, local, &offset, 1, NULL, &buffer);
     check_ocl(err, "Enqueueing buffer zero kernel");
 }
 
@@ -192,7 +192,7 @@ void zero_buffer_inner(struct context * context, cl_mem buffer, size_t offset, s
     size_t global[3] = {size,1,1};
     size_t local[3] = {0,0,0};
     //err = clEnqueueNDRangeKernel(context->queue,context->kernels.zero_buffer,1, &offset, &size, NULL, 0, NULL, NULL);
-    err = meta_gen_opencl_sweep_zero_inner_reducef_zero_buffer(context->queue, global, local, &offset, &buffer, 1, NULL);
+    err = metacl_sweep_zero_inner_reducef_zero_buffer(context->queue, global, local, &offset, 1, NULL, &buffer);
     check_ocl(err, "Enqueueing buffer zero kernel");
 }
 
