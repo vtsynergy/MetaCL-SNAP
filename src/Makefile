@@ -6,13 +6,13 @@ endif
 ifeq ($(shell uname), Darwin)
 	OCL = -framework OpenCL
 else
-	OCL = -lOpenCL -lmm_opencl_backend -lmetamorph 
+	OCL = -L/opt/intel/inteloneapi/compiler/2021.1-beta03/linux/lib/oclfpga/host/linux64/lib -lOpenCL -lmm_opencl_backend -lmetamorph 
 endif
 
-CFLAGS_			=  -D WITH_OPENCL -I ~/metaCL_workspace/MetaMorph/include -I ~/metaCL_workspace/MetaMorph/metamorph-backends/opencl-backend  -O3
-CFLAGS_INTEL	=  -D WITH_OPENCL -I ~/metaCL_workspace/MetaMorph/include -I ~/metaCL_workspace/MetaMorph/metamorph-backends/opencl-backend -O3 -std=c99
-CFLAGS_CRAY		=  -D WITH_OPENCL -I ~/metaCL_workspace/MetaMorph/include -I ~/metaCL_workspace/MetaMorph/metamorph-backends/opencl-backend -O3
-CFLAGS_GNU		=  -D WITH_OPENCL -I ~/metaCL_workspace/MetaMorph/include -I ~/metaCL_workspace/MetaMorph/metamorph-backends/opencl-backend -O3 -std=gnu99 -lm
+CFLAGS_			=  -D WITH_OPENCL -I ../../MetaMorph/include -I ../../MetaMorph/metamorph-backends/opencl-backend  -O3
+CFLAGS_INTEL	=  -D WITH_OPENCL -I ../../MetaMorph/include -I ../../MetaMorph/metamorph-backends/opencl-backend -O3 -std=c99
+CFLAGS_CRAY		=  -D WITH_OPENCL -I ../../MetaMorph/include -I ../../MetaMorph/metamorph-backends/opencl-backend -O3
+CFLAGS_GNU		=  -D WITH_OPENCL $(shell aocl compile-config ) -I ../../MetaMorph/include -I ../../MetaMorph/metamorph-backends/opencl-backend -O3 -std=gnu99 -lm
 
 MPI_COMPILER 	= mpicc
 
@@ -32,7 +32,7 @@ snap: \
 	population.c \
 	metacl_module.c\
 	profiler.c
-	$(MPI_COMPILER) $^ $(CFLAGS_$(COMPILER))    -L ~/metaCL_workspace/MetaMorph/lib  $(OCL) $(OPTIONS) -o $@
+	$(MPI_COMPILER) $^ $(CFLAGS_$(COMPILER))    -L ../../MetaMorph/lib  $(OCL) $(OPTIONS) -o $@
 
 kernels/%.h:	kernels/%.cl
 	./stringify_opencl $< $@
@@ -54,6 +54,6 @@ ocl_init.c:	$(KERNEL_HEADER_FILES)
 
 .PHONY: clean
 run: 
-	LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/metaCL_workspace/MetaMorph/lib  ./snap $(i) $(device)
+	LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../../MetaMorph/lib  ./snap $(i) $(device)
 clean:
 	rm -f snap kernels/*.h
