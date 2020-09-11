@@ -10,7 +10,6 @@ The solution to the time-dependent TE is a "flux" function of seven independent 
 
 The iterative strategy is comprised of a set of two nested loops. These nested loops are performed for each step of a time-dependent calculation, wherein any particular time step requires information from the preceding one. No parallelization is performed over the temporal domain. However, for time-dependent calculations two copies of the unknown flux must be stored, each copy an array of the six remaining dimensions. The outer iterative loop involves solving for the flux over the energy domain with updated information about coupling among the energy groups. Typical calculations require tens to hundreds of groups, making the energy domain suitable for threading with the node's (or nodes') provided accelerator. The inner loop involves sweeping across the entire spatial mesh along each discrete direction of the angular domain. The spatial mesh may be immensely large. Therefore, SNAP spatially decomposes the problem across nodes and communicates needed information according to the KBA method. KBA is a transport-specific application of general parallel wavefront methods. Lastly, although KBA efficiency is improved by pipelining operations according to the angle, current chipsets operate best with vectorized operations. During a mesh sweep, SNAP operations are vectorized over angles to take advantage of the modern hardware.
 
-SNAP should be tested with problem sizes that accurately reflect the types of calculations PARTISN frequently handles. The spatial domain shall be decomposed to 2,000--4,000 cells per node (MPI rank). Each node will own all the energy groups and angles for that group of cells; typical calculations feature 10--100 energy groups and as few as 100 to as many as 2,000 angles. Moreover, sufficient memory must be provided to store two full copies of the solution vector for time-dependent calculations. The preceding parameters assume current trends in available per core memory. Significant advances or detriments affecting this assumption shall require reconsideration of appropriate parameters per compute node.
 
 Compilation
 -----------
@@ -23,30 +22,27 @@ on the command line within the SNAP directory.
 
 Usage
 -----
- To run SNAP type
+To run SNAP type
 
     make run i=<input_file> d=<device_number>
  
  on the command line within the SNAP directory.
      
-          
+
 MetaMorph
-
 -----
-
 MetaMorph (https://github.com/vtsynergy/MetaMorph) is a framework designed to effectively utilize HPC systems that consist of multiple heterogeneous nodes with different hardware accelerators. It acts as middleware between the application code and compute devices, such as CPUs, GPUs, Intel MIC and FPGAs. MetaMorph hides the complexity of developing code for and executing on heterogeneous platform by acting as a unified “meta-platform.” Metamorph is developed by the Synergy Laboratory @ Virginia Tech (http://synergy.cs.vt.edu/)
 
 
 MetaCL
-
 -----
-
 MetaCL (https://github.com/vtsynergy/MetaMorph/tree/master/metamorph-generators/opencl) is a tool that takes OpenCL kernels as input and generates host-side wrappers. These wrappers effectively make OpenCL host-side code developement efficient. MetaCL makes use of Metamorph's OpenCL APIs and backend for generating host-side wrappers. 
 
 Metacl Tutorial: https://github.com/vtsynergy/MetaMorph/tree/c661366a13dec9eb7b9876c91695da48e96d8ba8/metamorph-generators/opencl/docs/tutorials
 
-
-Publications
-
+Publication
 -----
 MetaCL: Automated "Meta" OpenCL Code Generation for High-Level Sythesis on FPGA." Paul Sathre, Atharva Gondhalekar, Mohamed Hassan, Wu-chun Feng. In Proceedings of the IEEE High Performance Extreme Computing Virtual Conference (HPEC), Boston, MA, USA, September 2020
+
+ 
+          
