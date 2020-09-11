@@ -9,7 +9,7 @@ else
 	OCL = $(shell aocl link-config)  -lmetamorph_opencl -lmetamorph 
 endif
 
-CFLAGS_			=  -D WITH_OPENCL $(shell aocl compile-config ) -I -I ~/MetaMorph/include -I ~/MetaMorph/metamorph-backends/opencl-backend  -O3
+CFLAGS_			=  -D WITH_OPENCL $(shell aocl compile-config) -I ~/MetaMorph/include -I ~/MetaMorph/metamorph-backends/opencl-backend -O3 -std=c99 -lm
 CFLAGS_INTEL	=  -D WITH_OPENCL -I ~/MetaMorph/include -I ~/metaCL_workspace/MetaMorph/metamorph-backends/opencl-backend -O3 -std=c99
 CFLAGS_CRAY		=  -D WITH_OPENCL -I ~/metaCL_workspace/MetaMorph/include -I ~/metaCL_workspace/MetaMorph/metamorph-backends/opencl-backend -O3
 CFLAGS_GNU		=  -D WITH_OPENCL $(shell aocl compile-config) -I ~/MetaMorph/include -I ~/MetaMorph/metamorph-backends/opencl-backend -O3 -std=c99 -lm
