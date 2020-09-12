@@ -86,7 +86,7 @@ void compute_scalar_flux_moments(
 
     //const size_t global[] = {power * problem->ng, rankinfo->nx*rankinfo->ny*rankinfo->nz};
     //const size_t local[] = {power, 1};
-    a_dim3 global ={problem->ng, rankinfo->nx*rankinfo->ny*rankinfo->nz,1}; 
+    a_dim3 global ={power*problem->ng, rankinfo->nx*rankinfo->ny*rankinfo->nz,1}; 
     a_dim3 local ={power, 1,1}; 
     cl_int err;
    
