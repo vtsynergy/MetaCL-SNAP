@@ -1,7 +1,6 @@
 
 #include "scalar_flux.h"
-#include "metamorph.h"
-#include "metacl_module.h"
+
 
 
 void compute_scalar_flux(
