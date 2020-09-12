@@ -1,7 +1,6 @@
 
 #include "scalar_flux.h"
-#include "metamorph.h"
-#include "metacl_module.h"
+
 extern double ker_launch_over[9];
 extern double ker_exec_time[9];
 extern int ker_call_nums[9];
