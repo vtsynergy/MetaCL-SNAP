@@ -54,14 +54,14 @@ ocl_init.c:	$(KERNEL_HEADER_FILES)
 .PHONY:		 gen_aocx_hw
 
 gen_aocx_hw:
-	aoc -v sweep_zero_inner_reducef.cl 
-	aoc -v outer_zero_and_others.cl
+	aoc -v -cl-mad-enable -cl-fast-relaxed-math sweep_zero_inner_reducef.cl 
+	aoc -v -cl-mad-enable -cl-fast-relaxed-math outer_zero_and_others.cl
 
 .PHONY:		 gen_aocx_emu
 
 gen_aocx_emu:
-	aoc -v -march=emulator sweep_zero_inner_reducef.cl
-	aoc -v -march=emulator outer_zero_and_others.cl                            
+	aoc -v -march=emulator -cl-mad-enable -cl-fast-relaxed-math sweep_zero_inner_reducef.cl
+	aoc -v -march=emulator -cl-mad-enable -cl-fast-relaxed-math outer_zero_and_others.cl                            
                             
                             
 
