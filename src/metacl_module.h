@@ -1,6 +1,14 @@
-
+//struct cell_id {
+ // cl_uint i;
+  //cl_uint j;
+  //cl_uint k;
+//};
 extern const char * __metacl_outer_zero_and_others_custom_args;
-
+//struct cell_id {
+//  cl_uint i;
+//  cl_uint j;
+//  cl_uint k;
+//};
 extern const char * __metacl_sweep_zero_inner_reducef_custom_args;
 struct __metacl_metacl_module_frame;
 struct __metacl_metacl_module_frame {

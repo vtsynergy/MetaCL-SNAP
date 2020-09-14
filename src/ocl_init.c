@@ -1,9 +1,11 @@
-
 #include "profiler.h"
 #include "ocl_global.h"
 #include "ocl_kernels.h"
-#include "metamorph.h"
-#include "metacl_module.h"
+//#include "CL/cl.h"
+
+//#include "CL/cl.h"
+//#include "mm_opencl_backend.h"
+
 #define MAX_DEVICES 16
 extern int deviceIndex;
 void check_ocl_error(const cl_int err, const char *msg, const int line, const char * file)
