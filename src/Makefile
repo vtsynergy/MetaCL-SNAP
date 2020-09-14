@@ -75,6 +75,20 @@ KERNEL_HEADER_FILES=\
 ocl_init.c:	$(KERNEL_HEADER_FILES)
 	@touch ocl_init.c
 
+                            
+.PHONY:		 gen_aocx_hw
+
+gen_aocx_hw:
+	aoc -v sweep_zero_inner_reducef.cl 
+	aoc -v outer_zero_and_others.cl
+
+.PHONY:		 gen_aocx_emu
+
+gen_aocx_emu:
+	aoc -v -march=emulator sweep_zero_inner_reducef.cl
+	aoc -v -march=emulator outer_zero_and_others.cl                            
+                            
+                            
 .PHONY: clean
 run: 
 	LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(METAMORPH_PATH)/lib  ./snap $(i) $(device)
