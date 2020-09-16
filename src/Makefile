@@ -30,6 +30,7 @@ ifeq ($(FPGA), INTEL_EMU)
   FPGA=INTEL
 endif
 ifeq ($(FPGA), INTEL)
+  DEPS := $(DEPS) outer_zero_and_others.aocx sweep_zero_inner_reducef.aocx
   CFLAGS := $(CFLAGS) $(shell aocl compile-config)
   OCL := $(OCL) $(shell aocl link-config)
 endif
