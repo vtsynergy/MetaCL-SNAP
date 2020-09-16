@@ -1,10 +1,12 @@
-
+#include <string.h>
 #include "profiler.h"
 #include "ocl_global.h"
 #include "ocl_kernels.h"
 
-#define MAX_DEVICES 16
+cl_device_type devType;
+char * platName;
 extern int deviceIndex;
+#define MAX_DEVICES 16
 void check_ocl_error(const cl_int err, const char *msg, const int line, const char * file)
 {
     if (err != CL_SUCCESS)
@@ -137,7 +139,17 @@ void init_ocl(struct context * context, const bool multigpu, const int rank)
 //    check_ocl(err, "Creating scalar flux reduction kernel");
 //    context->kernels.reduce_flux_moments = clCreateKernel(context->program, "reduce_flux_moments", &err);
 //    check_ocl(err, "Creating scalar flux moments reduction kernel");
-//   
+   
+    // Detect device type and vendor
+    err = clGetDeviceInfo(context->device, CL_DEVICE_TYPE, sizeof(cl_device_type), &devType, NULL);
+    check_ocl(err, "Querying device type");
+    size_t name_size;
+    err = clGetPlatformInfo(fplatforms, CL_PLATFORM_NAME, 0, NULL, &name_size);
+    check_ocl(err, "Querying platform name length");
+    platName = (char *)calloc(sizeof(char), name_size + 1);
+    err = clGetPlatformInfo(fplatforms, CL_PLATFORM_NAME, name_size + 1, platName, NULL);
+    check_ocl(err, "Querying platform name");
+
 
 }
 
@@ -161,4 +173,5 @@ void release_context(struct context * context)
     
     meta_deregister_module(&metacl_metacl_module_registry);
 
+    free(platName);
 }
