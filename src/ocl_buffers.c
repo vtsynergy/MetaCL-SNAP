@@ -182,9 +182,6 @@ void zero_buffer_inner(struct context * context, cl_mem buffer, size_t offset, s
     check_ocl(err, "Enqueueing buffer zero inner kernel");
 }
 
-
-
-
 void zero_buffer(struct context * context, cl_mem buffer, size_t offset, size_t size)
 {
     cl_int err;
