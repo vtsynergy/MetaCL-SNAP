@@ -10,7 +10,8 @@
 #else
 #include <CL/cl.h>
 #endif
-
+#include "metamorph.h"
+#include "metacl_module.h"
 
 /** \file
 * \brief Basic OpenCL routines and global structures

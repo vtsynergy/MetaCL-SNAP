@@ -3,16 +3,39 @@ ifndef COMPILER
 	MESSAGE=select a compiler to compiler in OpenMP, e.g. make COMPILER=INTEL
 endif
 
-ifeq ($(shell uname), Darwin)
-	OCL = -framework OpenCL
+
+PLATFORM = $(shell uname -s)
+ifeq ($(PLATFORM), Darwin)
+  OCL = -framework OpenCL -g
+else ifeq ($(PLATFORM), INTEL_FPGA)
+  OCL = $(shell aocl link-config)
 else
-	OCL = -L/opt/intel/inteloneapi/compiler/2021.1-beta03/linux/lib/oclfpga/host/linux64/lib -lOpenCL  -lmm_opencl_backend -lmetamorph 
+  OCL = -lOpenCL 
 endif
 
-CFLAGS_			=  -D WITH_OPENCL $(shell aocl compile-config ) -I -I ../../MetaMorph/include -I ../../MetaMorph/metamorph-backends/opencl-backend  -O3
-CFLAGS_INTEL	=  -D WITH_OPENCL -I ../../MetaMorph/include -I ../../MetaMorph/metamorph-backends/opencl-backend -O3 -std=c99
-CFLAGS_CRAY		=  -D WITH_OPENCL -I ../../MetaMorph/include -I ../../MetaMorph/metamorph-backends/opencl-backend -O3
-CFLAGS_GNU		=  -D WITH_OPENCL $(shell aocl compile-config ) -I ../../MetaMorph/include -I ../../MetaMorph/metamorph-backends/opencl-backend -O3 -std=c99 -lm
+
+MCL = -lmetamorph_opencl -lmetamorph
+
+METAMORPH_PATH=../../MetaMorph
+
+
+CFLAGS_		=  -D WITH_OPENCL  
+CFLAGS_INTEL	=  -D WITH_OPENCL  
+CFLAGS_CRAY	=  -D WITH_OPENCL  
+CFLAGS_GNU	=  -D WITH_OPENCL  
+
+ifeq ($(PLATFORM), INTEL_FPGA)
+ CFLAGS_      +=  $(shell aocl compile-config)
+ CFLAGS_INTEL +=  $(shell aocl compile-config)
+ CFLAGS_CRAY  +=  $(shell aocl compile-config)
+ CFLAGS_GNU   +=  $(shell aocl compile-config)
+endif
+
+CFLAGS_		+=   -I $(METAMORPH_PATH)/include -I $(METAMORPH_PATH)/metamorph-backends/opencl-backend -O3 -std=c99 -lm
+CFLAGS_INTEL	+=   -I $(METAMORPH_PATH)/include -I $(METAMORPH_PATH)/metamorph-backends/opencl-backend -O3 -std=c99 -lm
+CFLAGS_CRAY	+=   -I $(METAMORPH_PATH)/include -I $(METAMORPH_PATH)/metamorph-backends/opencl-backend -O3 -std=c99 -lm
+CFLAGS_GNU	+=   -I $(METAMORPH_PATH)/include -I $(METAMORPH_PATH)/metamorph-backends/opencl-backend -O3 -std=c99 -lm
+
 
 MPI_COMPILER 	= mpicc
 
@@ -32,7 +55,7 @@ snap: \
 	population.c \
 	metacl_module.c\
 	profiler.c
-	$(MPI_COMPILER) $^ $(CFLAGS_$(COMPILER))    -L ../../MetaMorph/lib  $(OCL) $(OPTIONS) -o $@
+	$(MPI_COMPILER) $^ $(CFLAGS_$(COMPILER)) -L $(METAMORPH_PATH)/lib  $(OCL) $(MCL) $(OPTIONS) -o $@
 
 kernels/%.h:	kernels/%.cl
 	./stringify_opencl $< $@
@@ -52,8 +75,21 @@ KERNEL_HEADER_FILES=\
 ocl_init.c:	$(KERNEL_HEADER_FILES)
 	@touch ocl_init.c
 
+.PHONY:		 gen_aocx_hw
+
+gen_aocx_hw:
+	aoc -v -cl-mad-enable -cl-fast-relaxed-math sweep_zero_inner_reducef.cl 
+	aoc -v -cl-mad-enable -cl-fast-relaxed-math outer_zero_and_others.cl
+
+.PHONY:		 gen_aocx_emu
+
+gen_aocx_emu:
+	aoc -v -march=emulator -cl-mad-enable -cl-fast-relaxed-math sweep_zero_inner_reducef.cl
+	aoc -v -march=emulator -cl-mad-enable -cl-fast-relaxed-math outer_zero_and_others.cl
+
 .PHONY: clean
+
 run: 
-	LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../../MetaMorph/lib  ./snap $(i) $(device)
+	LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(METAMORPH_PATH)/lib  ./snap $(i) $(device)
 clean:
 	rm -f snap kernels/*.h
