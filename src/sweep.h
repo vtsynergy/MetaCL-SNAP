@@ -11,14 +11,6 @@
 #include "ocl_global.h"
 #include "ocl_buffers.h"
 
-/** \brief Structure to hold a 3D cell index for use in storing planes */
-struct cell_id
-{
-    /** @{ \brief Cell index */
-    unsigned int i, j, k;
-    /** @} */
-};
-
 /** \brief Structure to hold list of cells in each plane */
 struct plane
 {

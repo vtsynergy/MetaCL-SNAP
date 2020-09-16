@@ -22,6 +22,7 @@
 
 double sweep_mpi_time = 0.0;
 double sweep_mpi_recv_time = 0.0;
+
 int deviceIndex;
 /** \mainpage
 * SNAP-MPI is a cut down version of the SNAP mini-app which allows us to
@@ -48,14 +49,12 @@ void print_timing_report(struct timers * timers, struct problem * problem, unsig
 /** \brief Main function, contains iteration loops */
 int main(int argc, char **argv)
 {
-        
+    //Get device index from command line
     if(argc>2){
-  	char *c =argv[2];
-  	deviceIndex= atoi(c);
-  	printf("device number entered is %d\n", deviceIndex);
+        char *c =argv[2];
+        deviceIndex= atoi(c);
+        printf("device number entered is %d\n", deviceIndex);
     }
-
-
     int mpi_err = MPI_Init(&argc, &argv);
     check_mpi(mpi_err, "MPI_Init");
 
