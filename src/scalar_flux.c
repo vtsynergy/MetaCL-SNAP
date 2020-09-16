@@ -1,5 +1,8 @@
 
 #include "scalar_flux.h"
+#include "string.h"
+extern cl_device_type devType;
+extern char * platName;
 
 
 
@@ -13,7 +16,10 @@ void compute_scalar_flux(
 
     // get closest power of 2 to nang
     size_t power = 1 << (unsigned int)ceil(log2((double)problem->nang));
+    if (devType & CL_DEVICE_TYPE_ACCELERATOR && (strstr(platName, "Intel(R) FPGA")!=NULL || strstr(platName, "Altera")!=NULL)) {
 	if (power > 128) power = 128;
+    }
+
     //const size_t global[] = {power * problem->ng, rankinfo->nx*rankinfo->ny*rankinfo->nz};
     //const size_t local[] = {power, 1};
     a_dim3 global ={power * problem->ng, rankinfo->nx*rankinfo->ny*rankinfo->nz,1};
@@ -68,7 +74,9 @@ void compute_scalar_flux_moments(
 
     // get closest power of 2 to nang
     size_t power = 1 << (unsigned int)ceil(log2((double)problem->nang));
+    if (devType & CL_DEVICE_TYPE_ACCELERATOR && (strstr(platName, "Intel(R) FPGA")!=NULL || strstr(platName, "Altera")!=NULL)) {
 	if (power > 128) power = 128;
+    }
 
     //const size_t global[] = {power * problem->ng, rankinfo->nx*rankinfo->ny*rankinfo->nz};
     //const size_t local[] = {power, 1};
