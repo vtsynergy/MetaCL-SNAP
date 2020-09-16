@@ -7,8 +7,6 @@ endif
 PLATFORM = $(shell uname -s)
 ifeq ($(PLATFORM), Darwin)
   OCL = -framework OpenCL -g
-else ifeq ($(PLATFORM), INTEL_FPGA)
-  OCL = $(shell aocl link-config)
 else
   OCL = -lOpenCL 
 endif
@@ -19,29 +17,27 @@ MCL = -lmetamorph_opencl -lmetamorph
 METAMORPH_PATH=../../MetaMorph
 
 
-CFLAGS_		=  -D WITH_OPENCL  
-CFLAGS_INTEL	=  -D WITH_OPENCL  
-CFLAGS_CRAY	=  -D WITH_OPENCL  
-CFLAGS_GNU	=  -D WITH_OPENCL  
+CFLAGS_			= -O3
+CFLAGS_INTEL	= -O3 -std=c99
+CFLAGS_CRAY		= -O3
+CFLAGS_GNU		= -O3 -std=c99 -lm
+CFLAGS := $(CFLAGS) $(CFLAGS_$(COMPILER))
+CFLAGS := $(CFLAGS) -D WITH_OPENCL -I $(METAMORPH_PATH)/include -I $(METAMORPH_PATH)/metamorph-backends/opencl-backend
 
-ifeq ($(PLATFORM), INTEL_FPGA)
- CFLAGS_      +=  $(shell aocl compile-config)
- CFLAGS_INTEL +=  $(shell aocl compile-config)
- CFLAGS_CRAY  +=  $(shell aocl compile-config)
- CFLAGS_GNU   +=  $(shell aocl compile-config)
+AOC_OPTS := $(AOC_OPTS) -v -cl-mad-enable -cl-fast-relaxed-math
+ifeq ($(FPGA), INTEL_EMU)
+  AOC_OPTS := $(AOC_OPTS) -march=emulator
+  FPGA=INTEL
 endif
-
-CFLAGS_		+=   -I $(METAMORPH_PATH)/include -I $(METAMORPH_PATH)/metamorph-backends/opencl-backend -O3 -std=c99 -lm
-CFLAGS_INTEL	+=   -I $(METAMORPH_PATH)/include -I $(METAMORPH_PATH)/metamorph-backends/opencl-backend -O3 -std=c99 -lm
-CFLAGS_CRAY	+=   -I $(METAMORPH_PATH)/include -I $(METAMORPH_PATH)/metamorph-backends/opencl-backend -O3 -std=c99 -lm
-CFLAGS_GNU	+=   -I $(METAMORPH_PATH)/include -I $(METAMORPH_PATH)/metamorph-backends/opencl-backend -O3 -std=c99 -lm
-
+ifeq ($(FPGA), INTEL)
+  CFLAGS := $(CFLAGS) $(shell aocl compile-config)
+  OCL := $(OCL) $(shell aocl link-config)
+endif
 
 MPI_COMPILER 	= mpicc
 
 
-snap: \
-	snap_main.c \
+SRC =	snap_main.c \
 	input.c \
 	allocate.c \
 	comms.c \
@@ -55,7 +51,9 @@ snap: \
 	population.c \
 	metacl_module.c\
 	profiler.c
-	$(MPI_COMPILER) $^ $(CFLAGS_$(COMPILER)) -L $(METAMORPH_PATH)/lib  $(OCL) $(MCL) $(OPTIONS) -o $@
+
+snap: $(SRC) $(DEPS)
+	$(MPI_COMPILER) $(SRC) $(CFLAGS) -L $(METAMORPH_PATH)/lib $(OCL) $(MCL) $(OPTIONS) -o $@
 
 kernels/%.h:	kernels/%.cl
 	./stringify_opencl $< $@
@@ -75,21 +73,12 @@ KERNEL_HEADER_FILES=\
 ocl_init.c:	$(KERNEL_HEADER_FILES)
 	@touch ocl_init.c
 
-.PHONY:		 gen_aocx_hw
+outer_zero_and_others.aocx: outer_zero_and_others.cl
+	aoc $(AOC_OPTS) outer_zero_and_others.cl
 
-gen_aocx_hw:
-	aoc -v -cl-mad-enable -cl-fast-relaxed-math sweep_zero_inner_reducef.cl 
-	aoc -v -cl-mad-enable -cl-fast-relaxed-math outer_zero_and_others.cl
-
-.PHONY:		 gen_aocx_emu
-
-gen_aocx_emu:
-	aoc -v -march=emulator -cl-mad-enable -cl-fast-relaxed-math sweep_zero_inner_reducef.cl
-	aoc -v -march=emulator -cl-mad-enable -cl-fast-relaxed-math outer_zero_and_others.cl
+sweep_zero_inner_reducef.aocx: sweep_zero_inner_reducef.cl
+	aoc $(AOC_OPTS) sweep_zero_inner_reducef.cl
 
 .PHONY: clean
-
-run: 
-	LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(METAMORPH_PATH)/lib  ./snap $(i) $(device)
 clean:
 	rm -f snap kernels/*.h
