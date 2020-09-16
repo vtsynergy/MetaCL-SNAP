@@ -6,6 +6,7 @@ extern double ker_exec_time[9];
 extern cl_ulong start_time, end_time;extern size_t return_bytes;
 extern struct timespec start, end;
 extern int ker_call_nums[9];
+
 void compute_outer_source(
     const struct problem * problem,
     const struct rankinfo * rankinfo,
@@ -15,7 +16,7 @@ void compute_outer_source(
 {
     size_t global[] = {rankinfo->nx, rankinfo->ny, rankinfo->nz};
     cl_int err;
-	err=clFinish(context->queue);
+    err=clFinish(context->queue);
     err=clFinish(context->copy_queue);
     clock_gettime(CLOCK_REALTIME, &start);
     err = clSetKernelArg(context->kernels.outer_source, 0, sizeof(unsigned int), &rankinfo->nx);
@@ -31,7 +32,6 @@ void compute_outer_source(
     err |= clSetKernelArg(context->kernels.outer_source, 10, sizeof(cl_mem), &buffers->outer_source);
     check_ocl(err, "Setting outer source kernel arguments");
 
-    
     err = clEnqueueNDRangeKernel(context->queue,
         context->kernels.outer_source,
         3, 0, global, NULL,
@@ -72,19 +72,16 @@ void compute_inner_source(
     err |= clSetKernelArg(context->kernels.inner_source, 10, sizeof(cl_mem), &buffers->inner_source);
     check_ocl(err, "Setting inner source kernel arguments");
 
-    
     err = clEnqueueNDRangeKernel(context->queue,
         context->kernels.inner_source,
         3, 0, global, NULL,
         0, NULL, &inner_source_event);
     err=clFinish(context->queue);
-    //clWaitForEvents(1,  &inner_source_event);
     clock_gettime(CLOCK_REALTIME, &end);
     ker_launch_over[1]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
     err = clGetEventProfilingInfo(inner_source_event,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);
     err = clGetEventProfilingInfo(inner_source_event,CL_PROFILING_COMMAND_END,sizeof(cl_ulong), &end_time,&return_bytes);
     ker_exec_time[1]+=(double)(end_time-start_time)/BILLION;
-    
     check_ocl(err, "Enqueue inner source kernel");
     ker_call_nums[1]++;
 }

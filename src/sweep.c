@@ -1,10 +1,12 @@
 
 #include "sweep.h"
+
 extern double ker_launch_over[9];
 extern double ker_exec_time[9];
 extern int ker_call_nums[9];
 extern cl_ulong start_time, end_time;extern size_t return_bytes;
 extern struct timespec start, end;
+
 void init_planes(struct plane** planes, unsigned int *num_planes, struct problem * problem, struct rankinfo * rankinfo)
 {
     *num_planes = rankinfo->nx + rankinfo->ny + problem->chunk - 2;
@@ -72,12 +74,14 @@ void sweep_plane(
 {
     cl_int err;
     cl_event temp1;
+
     // 2 dimensional kernel
     // First dimension: number of angles * number of groups
     // Second dimension: number of cells in plane
     size_t global[] = {problem->nang*problem->ng, planes[plane].num_cells};
+
     // Set the (many) kernel arguments
-	err=clFinish(context->queue);
+    err=clFinish(context->queue);
     err=clFinish(context->copy_queue);
     clock_gettime(CLOCK_REALTIME, &start);
     err = clSetKernelArg(context->kernels.sweep_plane, 0, sizeof(unsigned int), &rankinfo->nx);
@@ -106,8 +110,9 @@ void sweep_plane(
     err |= clSetKernelArg(context->kernels.sweep_plane, 23, sizeof(cl_mem), &buffers->flux_j);
     err |= clSetKernelArg(context->kernels.sweep_plane, 24, sizeof(cl_mem), &buffers->flux_k);
     err |= clSetKernelArg(context->kernels.sweep_plane, 25, sizeof(cl_mem), &buffers->angular_flux_out[octant]);
+
     check_ocl(err, "Setting plane sweep kernel arguments");
-    
+
     // Actually enqueue
     err = clEnqueueNDRangeKernel(context->queue,
         context->kernels.sweep_plane,

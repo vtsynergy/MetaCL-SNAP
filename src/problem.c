@@ -1,11 +1,13 @@
 
 #include "problem.h"
 #include <math.h>
+
 extern double ker_launch_over[9];
 extern double ker_exec_time[9];
 extern int ker_call_nums[9];
 extern cl_ulong start_time, end_time;extern size_t return_bytes;
 extern struct timespec start, end;
+
 void init_quadrature_weights(
     const struct problem * problem,
     const struct context * context,
@@ -274,7 +276,6 @@ void init_velocity_delta(
     err |= clSetKernelArg(context->kernels.calc_velocity_delta, 2, sizeof(cl_mem), &buffers->velocity_delta);
     check_ocl(err, "Setting velocity delta calculation kernel arguments");
 
-    
     err = clEnqueueNDRangeKernel(context->queue,
         context->kernels.calc_velocity_delta,
         1, 0, global, NULL,
@@ -287,7 +288,6 @@ void init_velocity_delta(
     ker_exec_time[2]+=(double)(end_time-start_time)/BILLION;
     check_ocl(err, "Enqueue velocity delta calculation kernel");
     ker_call_nums[2]++;
-    
 }
 
 void calculate_dd_coefficients(
@@ -297,7 +297,8 @@ void calculate_dd_coefficients(
     )
 {
     // We do this on the device because SNAP does it every outer
-    cl_int err;cl_event temp3;
+    cl_int err;
+    cl_event temp3;
     size_t global[] = {problem->nang};
     err=clFinish(context->queue);
     err=clFinish(context->copy_queue);
@@ -325,7 +326,6 @@ void calculate_dd_coefficients(
     check_ocl(err, "Enqueue diamond difference calculation kernel");
     temp3=NULL;
     ker_call_nums[3]++;
-
 }
 
 void calculate_denominator(
@@ -354,14 +354,12 @@ void calculate_denominator(
     err |= clSetKernelArg(context->kernels.calc_denominator, 10, sizeof(cl_mem), &buffers->dd_k);
     err |= clSetKernelArg(context->kernels.calc_denominator, 11, sizeof(cl_mem), &buffers->denominator);
     check_ocl(err, "Setting denominator kernel arguments");
-   
-    
+
     err = clEnqueueNDRangeKernel(context->queue,
         context->kernels.calc_denominator,
         2, 0, global, NULL,
         0, NULL, &denominator_event);
     clFinish(context->queue);
-    
     clock_gettime(CLOCK_REALTIME, &end);
     ker_launch_over[4]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
     err = clGetEventProfilingInfo(denominator_event,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);

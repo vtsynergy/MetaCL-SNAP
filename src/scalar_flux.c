@@ -27,7 +27,7 @@ void compute_scalar_flux(
     const size_t local[] = {power, 1};
 
     cl_int err;
-	err=clFinish(context->queue);
+    err=clFinish(context->queue);
     err=clFinish(context->copy_queue);
     clock_gettime(CLOCK_REALTIME, &start);
     err  = clSetKernelArg(context->kernels.reduce_flux,  0, sizeof(unsigned int), &rankinfo->nx);
@@ -69,7 +69,6 @@ void compute_scalar_flux(
     ker_exec_time[5]+=(double)(end_time-start_time)/BILLION;
     check_ocl(err, "Enqueueing scalar flux reduction kernel");
     ker_call_nums[5]++;
-
 }
 
 void compute_scalar_flux_moments(
@@ -90,7 +89,7 @@ void compute_scalar_flux_moments(
     const size_t local[] = {power, 1};
 
     cl_int err;
-	err=clFinish(context->queue);
+    err=clFinish(context->queue);
     err=clFinish(context->copy_queue);
     clock_gettime(CLOCK_REALTIME, &start);
     err  = clSetKernelArg(context->kernels.reduce_flux_moments,  0, sizeof(unsigned int), &rankinfo->nx);
@@ -126,7 +125,7 @@ void compute_scalar_flux_moments(
         context->kernels.reduce_flux_moments,
         2, 0, global, local,
         0, NULL, &scalar_flux_moments_event);
-     clFinish(context->queue);
+    clFinish(context->queue);
     clock_gettime(CLOCK_REALTIME, &end);
     ker_launch_over[6]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
     err = clGetEventProfilingInfo(scalar_flux_moments_event,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);
@@ -134,7 +133,6 @@ void compute_scalar_flux_moments(
     ker_exec_time[6]+=(double)(end_time-start_time)/BILLION;
     check_ocl(err, "Enqueueing scalar flux moments reduction kernel");
     ker_call_nums[6]++;
-
 }
 
 

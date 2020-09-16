@@ -23,7 +23,7 @@ void init_ocl(struct context * context, const bool multigpu, const int rank)
     cl_int err;
 
     // Get list of platforms
-       cl_uint num_platforms;
+    cl_uint num_platforms;
     err = clGetPlatformIDs(0, NULL, &num_platforms);
     check_ocl(err, "Getting number of platforms");
     cl_platform_id *platforms = malloc(num_platforms*sizeof(cl_platform_id));
@@ -37,7 +37,7 @@ void init_ocl(struct context * context, const bool multigpu, const int rank)
     for (unsigned int i = 0; i < num_platforms; i++)
     {
         cl_uint num;
-        err = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_ALL, MAX_DEVICES-num_devices, devices+num_devices, &num);
+        err = clGetDeviceIDs(platforms[i], type, MAX_DEVICES-num_devices, devices+num_devices, &num);
         check_ocl(err, "Getting devices");
         num_devices += num;
     }
@@ -132,45 +132,23 @@ FILE * f = fopen(#name".aocx", "r"); \
     check_ocl(build_err, "Building program");
 
     // Create the kernels
-    context->kernels.calc_velocity_delta = clCreateKernel(outer_zero_and_others, "calc_velocity_delta", &err);  
+    context->kernels.calc_velocity_delta = clCreateKernel(outer_zero_and_others, "calc_velocity_delta", &err);
     check_ocl(err, "Creating velocity delta kernel");
-  
-     //clBinaryProg(calc_dd_coeff);
-   //build_err = clBuildProgram(calc_dd_coeff, 1, &context->device, options, NULL, NULL);
+
     context->kernels.calc_dd_coeff = clCreateKernel(outer_zero_and_others, "calc_dd_coeff", &err);
     check_ocl(err, "Creating diamond difference constants kernel");
-  
-  
-  
-  
-     //clBinaryProg(calc_denominator);
-    //build_err = clBuildProgram(calc_denominator, 1, &context->device, options, NULL, NULL);  
+
     context->kernels.calc_denominator = clCreateKernel(outer_zero_and_others, "calc_denominator", &err);
     check_ocl(err, "Creating denominator kernel");
-  
-  
-  
-     //clBinaryProg(zero_buffer);
-     //build_err = clBuildProgram(zero_buffer, 1, &context->device, options, NULL, NULL);
+
     context->kernels.zero_buffer = clCreateKernel(outer_zero_and_others, "zero_buffer", &err);
     check_ocl(err, "Creating buffer zeroing kernel");
-  
-  
-    //clBinaryProg(reduce_flux_moments);
-     //build_err = clBuildProgram(reduce_flux_moments, 1, &context->device, options, NULL, NULL);
+
     context->kernels.reduce_flux_moments = clCreateKernel(outer_zero_and_others, "reduce_flux_moments", &err);
     check_ocl(err, "Creating scalar flux moments reduction kernel");
 
-
-  
-     //clBinaryProg(outer_source);
-     //build_err = clBuildProgram(outer_source, 1, &context->device, options, NULL, NULL);
     context->kernels.outer_source = clCreateKernel(outer_zero_and_others, "calc_outer_source", &err);
     check_ocl(err, "Creating outer source kernel");
-  
-  
-
-     
 
     if (devType & CL_DEVICE_TYPE_ACCELERATOR && (strstr(platName, "Intel(R) FPGA")!=NULL || strstr(platName, "Altera")!=NULL)) {
         clBinaryProg(sweep_zero_inner_reducef);
@@ -192,31 +170,23 @@ FILE * f = fopen(#name".aocx", "r"); \
     }
     context->kernels.inner_source = clCreateKernel(sweep_zero_inner_reducef, "calc_inner_source", &err);
     check_ocl(err, "Creating inner source kernel");
-  
-  
-  
-     //clBinaryProg(sweep_plane);
-    //build_err = clBuildProgram(sweep_plane, 1, &context->device, options, NULL, NULL);
+
     context->kernels.sweep_plane = clCreateKernel(sweep_zero_inner_reducef, "sweep_plane", &err);
     check_ocl(err, "Creating sweep plane kernel");
-  
-  
-  
-     //clBinaryProg(reduce_flux);
-     //build_err = clBuildProgram(reduce_flux, 1, &context->device, options, NULL, NULL);
+
     context->kernels.reduce_flux = clCreateKernel(sweep_zero_inner_reducef, "reduce_flux", &err);
     check_ocl(err, "Creating scalar flux reduction kernel");
-  
+
     context->kernels.zero_buffer_inner = clCreateKernel(sweep_zero_inner_reducef, "zero_buffer", &err);
     check_ocl(err, "Creating buffer zeroing kernel");
-  
+
 }
 
 void release_context(struct context * context)
 {
     cl_int err;
-    //err = clReleaseProgram(context->program);
-    //check_ocl(err, "Releasing program");
+    err = clReleaseProgram(context->program);
+    check_ocl(err, "Releasing program");
 
 #ifdef CL_VERSION_1_2
     err = clReleaseDevice(context->device);
