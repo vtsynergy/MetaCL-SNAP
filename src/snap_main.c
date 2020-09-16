@@ -19,8 +19,10 @@
 
 #include "ocl_global.h"
 #include "ocl_buffers.h"
+
 double sweep_mpi_time = 0.0;
 double sweep_mpi_recv_time = 0.0;
+
 double ker_launch_over[9]={0,0,0,0,0,0,0,0,0};
 double ker_exec_time[9]={0,0,0,0,0,0,0,0,0};
 int ker_call_nums[9]={0,0,0,0,0,0,0,0,0};
@@ -29,11 +31,12 @@ int it_mon=0;
 double **ketime; 
 double **wctime;
 int **times;
+
 int deviceIndex;
 cl_ulong start_time, end_time; size_t return_bytes;
 struct timespec start, end;
-/** \mainpage
 
+/** \mainpage
 * SNAP-MPI is a cut down version of the SNAP mini-app which allows us to
 * investigate MPI decomposition schemes with OpenCL for node-level computation.
 *
@@ -58,11 +61,11 @@ void print_timing_report(struct timers * timers, struct problem * problem, unsig
 /** \brief Main function, contains iteration loops */
 int main(int argc, char **argv)
 {
-    
+    //Get device index from command line
     if(argc>2){
-  	char *c =argv[2];
-  	deviceIndex= atoi(c);
-  	printf("device number entered is %d\n", deviceIndex);
+        char *c =argv[2];
+        deviceIndex= atoi(c);
+        printf("device number entered is %d\n", deviceIndex);
     }
     int mpi_err = MPI_Init(&argc, &argv);
     check_mpi(mpi_err, "MPI_Init");

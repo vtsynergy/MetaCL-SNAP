@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <time.h>
 #include <stdio.h>
+
 /** \brief Problem dimensions
 *
 * Read in from input file or calculated from those inputs

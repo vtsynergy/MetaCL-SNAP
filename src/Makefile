@@ -4,18 +4,14 @@ ifndef COMPILER
 endif
 
 
-PLATFORM = $(shell uname -s)
-ifeq ($(PLATFORM), Darwin)
+ifeq ($(shell uname -s), Darwin)
   OCL = -framework OpenCL -g
 else
   OCL = -lOpenCL 
 endif
 
-
 MCL = -lmetamorph_opencl -lmetamorph
-
 METAMORPH_PATH=../../MetaMorph
-
 
 CFLAGS_			= -O3
 CFLAGS_INTEL	= -O3 -std=c99
