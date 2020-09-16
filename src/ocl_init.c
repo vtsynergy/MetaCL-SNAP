@@ -1,7 +1,11 @@
 
+#include <string.h>
 #include "profiler.h"
 #include "ocl_global.h"
 #include "ocl_kernels.h"
+
+cl_device_type devType;
+char * platName;
 extern int deviceIndex;
 #define MAX_DEVICES 16
 
@@ -74,13 +78,21 @@ void init_ocl(struct context * context, const bool multigpu, const int rank)
         check_ocl(err, "Creating copy command queue");
     }
 
+    // Detect device type and vendor
+    err = clGetDeviceInfo(context->device, CL_DEVICE_TYPE, sizeof(cl_device_type), &devType, NULL);
+    check_ocl(err, "Querying device type");
+    size_t name_size;
+    cl_platform_id plat;
+    err = clGetDeviceInfo(context->device, CL_DEVICE_PLATFORM, sizeof(cl_platform_id), &plat, NULL);
+    check_ocl(err, "Querying device platform");
+    err = clGetPlatformInfo(plat, CL_PLATFORM_NAME, 0, NULL, &name_size);
+    check_ocl(err, "Querying platform name length");
+    platName = (char *)calloc(sizeof(char), name_size + 1);
+    err = clGetPlatformInfo(plat, CL_PLATFORM_NAME, name_size + 1, platName, NULL);
+    check_ocl(err, "Querying platform name");
+
     // Create program
-    /*
-    context->program = clCreateProgramWithSource(context->context, sizeof(ocl_kernels)/sizeof(char*), ocl_kernels, NULL, &err);
-    check_ocl(err, "Creating program");
-    */
-    #define clBinaryProg(name) \
-cl_program name; { \
+    #define clBinaryProg(name) {\
        printf("Loading "#name".aocx\n"); \
 FILE * f = fopen(#name".aocx", "r"); \
        fseek(f, 0, SEEK_END); \
@@ -91,37 +103,33 @@ FILE * f = fopen(#name".aocx", "r"); \
        fclose(f); \
        cl_int err; \
        name = clCreateProgramWithBinary(context->context, 1, &context->device , &len, &progSrc, NULL, &err);}
-    // Build program
     char *options = "-cl-mad-enable -cl-fast-relaxed-math";
-    /*
-    cl_int build_err = clBuildProgram(context->program, 1, &context->device, options, NULL, NULL);
+    cl_program outer_zero_and_others;
+    cl_program sweep_zero_inner_reducef;
+    cl_int build_err;
+    if (devType & CL_DEVICE_TYPE_ACCELERATOR && (strstr(platName, "Intel(R) FPGA")!=NULL || strstr(platName, "Altera")!=NULL)) {
+        clBinaryProg(outer_zero_and_others);
+        build_err = clBuildProgram(outer_zero_and_others, 1, &context->device, options, NULL, NULL);
+    } else {
+        context->program = clCreateProgramWithSource(context->context, sizeof(ocl_kernels)/sizeof(char*), ocl_kernels, NULL, &err);
+        check_ocl(err, "Creating program");
+        // Build program
+        build_err = clBuildProgram(context->program, 1, &context->device, options, NULL, NULL);
+        outer_zero_and_others = context->program;
+    }
+
     if (build_err == CL_BUILD_PROGRAM_FAILURE)
     {
         size_t log_size;
-        err = clGetProgramBuildInfo(context->program, context->device, CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
+        err = clGetProgramBuildInfo(outer_zero_and_others, context->device, CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
         check_ocl(err, "Getting build log size");
         char *build_log = malloc(log_size);
-        err = clGetProgramBuildInfo(context->program, context->device, CL_PROGRAM_BUILD_LOG, log_size, build_log, NULL);
+        err = clGetProgramBuildInfo(outer_zero_and_others, context->device, CL_PROGRAM_BUILD_LOG, log_size, build_log, NULL);
         check_ocl(err, "Getting build log");
         fprintf(stderr, "OpenCL Build log: %s\n", build_log);
         free(build_log);
     }
     check_ocl(build_err, "Building program");
-	*/
-    
-    clBinaryProg(outer_zero_and_others);
-    cl_int build_err = clBuildProgram(outer_zero_and_others, 1, &context->device, options, NULL, NULL);
-     if (build_err == CL_BUILD_PROGRAM_FAILURE)
-    {
-        size_t log_size;
-        err = clGetProgramBuildInfo(context->program, context->device, CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
-        check_ocl(err, "Getting build log size");
-        char *build_log = malloc(log_size);
-        err = clGetProgramBuildInfo(context->program, context->device, CL_PROGRAM_BUILD_LOG, log_size, build_log, NULL);
-        check_ocl(err, "Getting build log");
-        fprintf(stderr, "OpenCL Build log: %s\n", build_log);
-        free(build_log);
-    } 
 
     // Create the kernels
     context->kernels.calc_velocity_delta = clCreateKernel(outer_zero_and_others, "calc_velocity_delta", &err);  
@@ -164,8 +172,24 @@ FILE * f = fopen(#name".aocx", "r"); \
 
      
 
-     clBinaryProg(sweep_zero_inner_reducef);
-     build_err = clBuildProgram(sweep_zero_inner_reducef, 1, &context->device, options, NULL, NULL);
+    if (devType & CL_DEVICE_TYPE_ACCELERATOR && (strstr(platName, "Intel(R) FPGA")!=NULL || strstr(platName, "Altera")!=NULL)) {
+        clBinaryProg(sweep_zero_inner_reducef);
+        build_err = clBuildProgram(sweep_zero_inner_reducef, 1, &context->device, options, NULL, NULL);
+        if (build_err == CL_BUILD_PROGRAM_FAILURE)
+        {
+            size_t log_size;
+            err = clGetProgramBuildInfo(sweep_zero_inner_reducef, context->device, CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
+            check_ocl(err, "Getting build log size");
+            char *build_log = malloc(log_size);
+            err = clGetProgramBuildInfo(sweep_zero_inner_reducef, context->device, CL_PROGRAM_BUILD_LOG, log_size, build_log, NULL);
+            check_ocl(err, "Getting build log");
+            fprintf(stderr, "OpenCL Build log: %s\n", build_log);
+            free(build_log);
+        }
+        check_ocl(build_err, "Building program");
+    } else {
+        sweep_zero_inner_reducef = context->program;
+    }
     context->kernels.inner_source = clCreateKernel(sweep_zero_inner_reducef, "calc_inner_source", &err);
     check_ocl(err, "Creating inner source kernel");
   
@@ -205,5 +229,5 @@ void release_context(struct context * context)
     err = clReleaseContext(context->context);
     check_ocl(err, "Releasing context");
 
+    free(platName);
 }
-
