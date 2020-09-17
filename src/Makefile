@@ -34,7 +34,9 @@ ifeq ($(FPGA), INTEL)
   CFLAGS := $(CFLAGS) $(shell aocl compile-config)
   OCL := $(OCL) $(shell aocl link-config)
 endif
+ifdef USE_METACL
 OCL := $(OCL) -lmetamorph -lmetamorph_opencl
+endif
 
 MPI_COMPILER 	= mpicc
 

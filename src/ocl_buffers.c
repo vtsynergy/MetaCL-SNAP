@@ -174,18 +174,34 @@ void allocate_buffers(
 void zero_buffer_inner(struct context * context, cl_mem buffer, size_t offset, size_t size)
 {
     cl_int err;
+#ifdef METACL
     size_t global[3] = {size,1,1};
     size_t local[3] = {0,0,0};
     err = metacl_sweep_zero_inner_reducef_zero_buffer(context->queue, global, local, &offset, 1, NULL, &buffer);
+#else
+    err = clSetKernelArg(context->kernels.zero_buffer_inner, 0, sizeof(cl_mem), &buffer);
+    check_ocl(err, "Setting buffer zero kernel argument");
+    err = clEnqueueNDRangeKernel(context->queue,
+        context->kernels.zero_buffer_inner,
+        1, &offset, &size, NULL, 0, NULL, NULL);
+#endif //METACL
     check_ocl(err, "Enqueueing buffer zero inner kernel");
 }
 
 void zero_buffer(struct context * context, cl_mem buffer, size_t offset, size_t size)
 {
     cl_int err;
+#ifdef METACL
     size_t global[3] = {size,1,1};
     size_t local[3] = {0,0,0};
     err = metacl_outer_zero_and_others_zero_buffer(context->queue, global, local, &offset, 1, NULL, &buffer);
+#else
+    err = clSetKernelArg(context->kernels.zero_buffer, 0, sizeof(cl_mem), &buffer);
+    check_ocl(err, "Setting buffer zero kernel argument");
+    err = clEnqueueNDRangeKernel(context->queue,
+        context->kernels.zero_buffer,
+        1, &offset, &size, NULL, 0, NULL, NULL);
+#endif //METACL
     check_ocl(err, "Enqueueing buffer zero kernel");
 }
 
