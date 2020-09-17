@@ -272,7 +272,7 @@ void init_velocity_delta(
     size_t local[3] = {0,0,0};
 
     clock_gettime(CLOCK_REALTIME, &start);
-    err = metacl_outer_zero_and_others_calc_velocity_delta(context->queue, global, local, NULL, 1, &velocity_delta_event, &buffers->velocities, problem->dt, &buffers->velocity_delta);
+    err = metacl_outer_zero_and_others_calc_velocity_delta(context->queue, global, local, NULL, 0, &velocity_delta_event, &buffers->velocities, problem->dt, &buffers->velocity_delta);
     clock_gettime(CLOCK_REALTIME, &end);
     ker_launch_over[2]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
     err = clGetEventProfilingInfo(velocity_delta_event,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);
