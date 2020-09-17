@@ -1,4 +1,4 @@
-#include "kernels.reduce_flux_moments.cl"
+#include "kernels/reduce_flux_moments.cl"
 #include "kernels/outer_source.cl"
 #include "kernels/calc_dd_coeff.cl"
 #include "kernels/calc_velocity_delta.cl"
