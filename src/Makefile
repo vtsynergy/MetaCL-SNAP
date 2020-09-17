@@ -1,4 +1,11 @@
+ifndef METACL
+METACL := $(shell which metaCL)
+define metaCL_help
+Set METACL to change binary location, attempting to use MetaCL at "$(METACL)"
 
+endef
+$(info $(metaCL_help))
+endif
 ifndef COMPILER
 	MESSAGE=select a compiler to compiler in OpenMP, e.g. make COMPILER=INTEL
 endif
@@ -10,17 +17,14 @@ else
   OCL = -lOpenCL 
 endif
 
-MCL = -lmetamorph_opencl -lmetamorph
-METAMORPH_PATH=../../MetaMorph
-
 CFLAGS_			= -O3
 CFLAGS_INTEL	= -O3 -std=c99
 CFLAGS_CRAY		= -O3
 CFLAGS_GNU		= -O3 -std=c99 -lm
 CFLAGS := $(CFLAGS) $(CFLAGS_$(COMPILER))
-CFLAGS := $(CFLAGS) -D WITH_OPENCL -I $(METAMORPH_PATH)/include -I $(METAMORPH_PATH)/metamorph-backends/opencl-backend
 
-AOC_OPTS := $(AOC_OPTS) -v -cl-mad-enable -cl-fast-relaxed-math
+CL_OPTS = -I . -cl-mad-enable -cl-fast-relaxed-math
+AOC_OPTS := $(AOC_OPTS) -v $(CL_OPTS)
 ifeq ($(FPGA), INTEL_EMU)
   AOC_OPTS := $(AOC_OPTS) -march=emulator
   FPGA=INTEL
@@ -30,6 +34,7 @@ ifeq ($(FPGA), INTEL)
   CFLAGS := $(CFLAGS) $(shell aocl compile-config)
   OCL := $(OCL) $(shell aocl link-config)
 endif
+OCL := $(OCL) -lmetamorph -lmetamorph_opencl
 
 MPI_COMPILER 	= mpicc
 
@@ -50,7 +55,7 @@ SRC =	snap_main.c \
 	profiler.c
 
 snap: $(SRC) $(DEPS)
-	$(MPI_COMPILER) $(SRC) $(CFLAGS) -L $(METAMORPH_PATH)/lib $(OCL) $(MCL) $(OPTIONS) -o $@
+	$(MPI_COMPILER) $(SRC) $(CFLAGS) -L $(METAMORPH_PATH)/lib $(OCL) $(OPTIONS) -o $@
 
 kernels/%.h:	kernels/%.cl
 	./stringify_opencl $< $@
@@ -70,6 +75,12 @@ KERNEL_HEADER_FILES=\
 ocl_init.c:	$(KERNEL_HEADER_FILES)
 	@touch ocl_init.c
 
+metacl_module.h: metacl_module.c
+
+METACL_CFLAGS := $(METACL_CFLAGS) $(CL_OPTS)
+metacl_module.c: outer_zero_and_others.cl sweep_zero_inner_reducef.cl
+	$(METACL) $^ --unified-output-file="metacl_module" -- -cl-std=CL1.2 --include opencl-c.h $(METACL_CFLAGS)
+
 outer_zero_and_others.aocx: outer_zero_and_others.cl
 	aoc $(AOC_OPTS) outer_zero_and_others.cl
 
@@ -78,5 +89,4 @@ sweep_zero_inner_reducef.aocx: sweep_zero_inner_reducef.cl
 
 .PHONY: clean
 clean:
-	rm -f snap kernels/*.h
-
+	rm -f snap kernels/*.h metacl_module.*
