@@ -55,7 +55,7 @@ SRC =	snap_main.c \
 	profiler.c
 
 snap: $(SRC) $(DEPS)
-	$(MPI_COMPILER) $(SRC) $(CFLAGS) -L $(METAMORPH_PATH)/lib $(OCL) $(OPTIONS) -o $@
+	$(MPI_COMPILER) $(SRC) $(CFLAGS) $(OCL) $(OPTIONS) -o $@
 
 kernels/%.h:	kernels/%.cl
 	./stringify_opencl $< $@
