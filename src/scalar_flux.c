@@ -27,8 +27,8 @@ void compute_scalar_flux(
     }
 
     cl_int err;
-    a_dim3 global ={power * problem->ng, rankinfo->nx*rankinfo->ny*rankinfo->nz,1};
-    a_dim3 local ={power, 1, 1};
+    size_t global[3] ={power * problem->ng, rankinfo->nx*rankinfo->ny*rankinfo->nz,1};
+    size_t local[3] ={power, 1, 1};
     int async = 1;
 #ifdef KERNEL_PROFILE
     err=clFinish(context->queue);
@@ -99,8 +99,8 @@ void compute_scalar_flux_moments(
     }
 
     cl_int err;
-    a_dim3 global ={power*problem->ng, rankinfo->nx*rankinfo->ny*rankinfo->nz,1};
-    a_dim3 local ={power, 1, 1};
+    size_t global[3] ={power*problem->ng, rankinfo->nx*rankinfo->ny*rankinfo->nz,1};
+    size_t local[3] ={power, 1, 1};
     int async = 1;
 #ifdef KERNEL_PROFILE
     err=clFinish(context->queue);

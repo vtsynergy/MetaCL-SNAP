@@ -49,7 +49,7 @@ void compute_outer_source(
         0, NULL, &outer_source_event);
     if (async == 0) clFinish(context->queue);
 #endif //METACL
-#ifdef //KERNEL_PROFILE
+#ifdef KERNEL_PROFILE
     clock_gettime(CLOCK_REALTIME, &end);
     ker_launch_over[0]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
     err = clGetEventProfilingInfo(outer_source_event,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);

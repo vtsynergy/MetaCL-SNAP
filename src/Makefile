@@ -55,6 +55,14 @@ SRC =	snap_main.c \
 	population.c \
 	profiler.c
 
+ifdef USE_METACL
+SRC := $(SRC) metacl_module.c
+OPTIONS := $(OPTIONS) -DMETACL
+endif
+ifdef KERNEL_PROFILE
+OPTIONS := $(OPTIONS) -DKERNEL_PROFILE
+endif
+
 snap: $(SRC) $(DEPS)
 	$(MPI_COMPILER) $(SRC) $(CFLAGS) $(OCL) $(OPTIONS) -o $@
 

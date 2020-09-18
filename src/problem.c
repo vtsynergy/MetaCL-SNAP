@@ -374,7 +374,7 @@ void calculate_denominator(
     clock_gettime(CLOCK_REALTIME, &start);
 #endif //KERNEL_PROFILE
 #ifdef METACL
-    err= metacl_outer_zero_and_others_calc_denominator(context->queue, global, local, NULL, asyc, &denominator_event,rankinfo->nx, rankinfo->ny, rankinfo->nz, problem->nang, problem->ng, &buffers->mat_cross_section, &buffers->velocity_delta, &buffers->mu, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k, &buffers->denominator);
+    err= metacl_outer_zero_and_others_calc_denominator(context->queue, global, local, NULL, async, &denominator_event,rankinfo->nx, rankinfo->ny, rankinfo->nz, problem->nang, problem->ng, &buffers->mat_cross_section, &buffers->velocity_delta, &buffers->mu, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k, &buffers->denominator);
 #else
     err = clSetKernelArg(context->kernels.calc_denominator, 0, sizeof(unsigned int), &rankinfo->nx);
     err |= clSetKernelArg(context->kernels.calc_denominator, 1, sizeof(unsigned int), &rankinfo->ny);
@@ -397,7 +397,6 @@ void calculate_denominator(
     if (async == 0) clFinish(context->queue);
 #endif //METACL
 #ifdef KERNEL_PROFILE
->>>>>>> native-profile
     clock_gettime(CLOCK_REALTIME, &end);
     ker_launch_over[4]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
     err = clGetEventProfilingInfo(denominator_event,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);

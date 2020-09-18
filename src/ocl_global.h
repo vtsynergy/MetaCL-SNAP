@@ -59,7 +59,7 @@ struct context
     /** \brief The (copy) command queue used for copying back scalar flux only */
     cl_command_queue copy_queue;
 
-#ifdef METACL
+#ifndef METACL
     /** \brief The program */
     cl_program program;
 
