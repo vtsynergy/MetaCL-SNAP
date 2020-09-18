@@ -11,8 +11,10 @@
 #include <CL/cl.h>
 #endif
 
+#ifdef METACL
 #include "metamorph.h"
 #include "metacl_module.h"
+#endif //METACL
 
 /** \file
 * \brief Basic OpenCL routines and global structures
@@ -35,7 +37,7 @@ struct kernels
     cl_kernel reduce_flux_moments;
     /** @} */
 };
-#endif
+#endif //METACL
 
 /**
 \brief Structure to contain OpenCL context, command queue, device and program objects
@@ -56,6 +58,14 @@ struct context
 
     /** \brief The (copy) command queue used for copying back scalar flux only */
     cl_command_queue copy_queue;
+
+#ifdef METACL
+    /** \brief The program */
+    cl_program program;
+
+    /** \brief The kernels */
+    struct kernels kernels;
+#endif //METACL
 };
 
 /**

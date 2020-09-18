@@ -87,6 +87,7 @@ void init_ocl(struct context * context, const bool multigpu, const int rank)
     err = clGetDeviceInfo(context->device, CL_DEVICE_PLATFORM, sizeof(cl_platform_id), &context->platform, NULL);
     check_ocl(err, "Querying device platform");
 #endif //METACL
+
     // Detect device type and vendor
     err = clGetDeviceInfo(context->device, CL_DEVICE_TYPE, sizeof(cl_device_type), &devType, NULL);
     check_ocl(err, "Querying device type");
@@ -115,6 +116,7 @@ FILE * f = fopen(#name".aocx", "r"); \
        fclose(f); \
        cl_int err; \
        name = clCreateProgramWithBinary(context->context, 1, &context->device , &len, &progSrc, NULL, &err);}
+
     cl_program outer_zero_and_others;
     cl_program sweep_zero_inner_reducef;
     cl_int build_err;
@@ -195,7 +197,24 @@ FILE * f = fopen(#name".aocx", "r"); \
 
 void release_context(struct context * context)
 {
+#ifdef METACL
     meta_deregister_module(&metacl_metacl_module_registry);
+#else
+    cl_int err;
+    err = clReleaseProgram(context->program);
+    check_ocl(err, "Releasing program");
+
+#ifdef CL_VERSION_1_2
+    err = clReleaseDevice(context->device);
+    check_ocl(err, "Releasing device");
+#endif
+
+    err = clReleaseCommandQueue(context->queue);
+    check_ocl(err, "Releasing command queue");
+
+    err = clReleaseContext(context->context);
+    check_ocl(err, "Releasing context");
+#endif //METACL
 
     free(platName);
 }

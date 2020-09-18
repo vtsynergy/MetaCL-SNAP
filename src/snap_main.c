@@ -46,7 +46,9 @@ struct timespec start, end;
 
 /** \brief Print out starting information */
 void print_banner(void);
+
 #ifdef KERNEL_PROFILE
+/** \brief Tally results after a global iteration */
 void print_res(void);
 #endif //KERNEL_PROFILE
 /** \brief Print out the input paramters */
@@ -124,8 +126,9 @@ int main(int argc, char **argv)
     // Set up communication neighbours
     struct rankinfo rankinfo;
     setup_comms(&problem, &rankinfo);
-    int is;
+
 #ifdef KERNEL_PROFILE
+    int is;
     ketime = (double **)malloc(9 * sizeof(double *)); 
     wctime = (double **)malloc(9* sizeof(double *)); 
     times =    (int **)malloc(9 * sizeof(int *)); 
@@ -135,6 +138,7 @@ int main(int argc, char **argv)
          times[is] = (int *)malloc((problem.nsteps +1) * sizeof(int)); 
     }
 #endif //KERNEL_PROFILE
+
     // Initlise the OpenCL
     struct context context;
     init_ocl(&context, problem.multigpu, rankinfo.rank);
@@ -196,6 +200,7 @@ int main(int argc, char **argv)
 #ifdef KERNEL_PROFILE
     print_res();
 #endif //KERNEL_PROFILE
+
     //----------------------------------------------
     // Timestep loop
     //----------------------------------------------

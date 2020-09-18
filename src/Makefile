@@ -53,7 +53,6 @@ SRC =	snap_main.c \
 	scalar_flux.c \
 	convergence.c \
 	population.c \
-	metacl_module.c\
 	profiler.c
 
 snap: $(SRC) $(DEPS)

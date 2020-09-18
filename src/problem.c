@@ -1,14 +1,15 @@
 
 #include "problem.h"
 #include <math.h>
+
 #ifdef KERNEL_PROFILE
 extern double ker_launch_over[9];
 extern double ker_exec_time[9];
 extern int ker_call_nums[9];
 extern cl_ulong start_time, end_time;extern size_t return_bytes;
 extern struct timespec start, end;
-extern size_t null_offset[3];
 #endif //KERNEL_PROFILE
+
 void init_quadrature_weights(
     const struct problem * problem,
     const struct context * context,
@@ -270,20 +271,35 @@ void init_velocity_delta(
     cl_int err;
     size_t global[3] = {problem->ng,1,1};
     size_t local[3] = {0,0,0};
+    int async = 1;
 #ifdef KERNEL_PROFILE
     err=clFinish(context->queue);
     err=clFinish(context->copy_queue);
+    async = 0;
 
     clock_gettime(CLOCK_REALTIME, &start);
-    err = metacl_outer_zero_and_others_calc_velocity_delta(context->queue, global, local, NULL, 0, &velocity_delta_event, &buffers->velocities, problem->dt, &buffers->velocity_delta);
+#endif //KERNEL_PROFILE
+#ifdef METACL
+    err = metacl_outer_zero_and_others_calc_velocity_delta(context->queue, global, local, NULL, async, &velocity_delta_event, &buffers->velocities, problem->dt, &buffers->velocity_delta);
+#else
+    err = clSetKernelArg(context->kernels.calc_velocity_delta, 0, sizeof(cl_mem), &buffers->velocities);
+    err |= clSetKernelArg(context->kernels.calc_velocity_delta, 1, sizeof(double), &problem->dt);
+    err |= clSetKernelArg(context->kernels.calc_velocity_delta, 2, sizeof(cl_mem), &buffers->velocity_delta);
+    check_ocl(err, "Setting velocity delta calculation kernel arguments");
+
+    err = clEnqueueNDRangeKernel(context->queue,
+        context->kernels.calc_velocity_delta,
+        1, 0, global, NULL,
+        0, NULL, &velocity_delta_event);
+    if (async == 0) clFinish(context->queue);
+#endif //METACL
+#ifdef KERNEL_PROFILE
     clock_gettime(CLOCK_REALTIME, &end);
     ker_launch_over[2]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
     err = clGetEventProfilingInfo(velocity_delta_event,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);
     err = clGetEventProfilingInfo(velocity_delta_event,CL_PROFILING_COMMAND_END,sizeof(cl_ulong), &end_time,&return_bytes);
     ker_exec_time[2]+=(double)(end_time-start_time)/BILLION;
     ker_call_nums[2]++;
-#else
-    err = metacl_outer_zero_and_others_calc_velocity_delta(context->queue, global, local, NULL, 1, &velocity_delta_event, &buffers->velocities, problem->dt, &buffers->velocity_delta);
 #endif //KERNEL_PROFILE
     check_ocl(err, "Enqueue velocity delta calculation kernel");
 }
@@ -298,23 +314,43 @@ void calculate_dd_coefficients(
     cl_int err;
     size_t global[3] = {problem->nang,1,1};
     size_t local[3] = {0,0,0};
-#ifdef KERNEL_PROFILE
     cl_event temp3;
+    int async = 1;
+#ifdef KERNEL_PROFILE
     err=clFinish(context->queue);
     err=clFinish(context->copy_queue);
+    async = 0;
 
     clock_gettime(CLOCK_REALTIME, &start);
-    err= metacl_outer_zero_and_others_calc_dd_coeff(context->queue, global, local,NULL, 0, &temp3, problem->dx, problem->dy, problem->dz, &buffers->eta, &buffers->xi, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k);
+#endif //KERNEL_PROFILE
+#ifdef METACL
+    err= metacl_outer_zero_and_others_calc_dd_coeff(context->queue, global, local, NULL, async, &temp3, problem->dx, problem->dy, problem->dz, &buffers->eta, &buffers->xi, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k);
+#else
+    err = clSetKernelArg(context->kernels.calc_dd_coeff, 0, sizeof(double), &problem->dx);
+    err |= clSetKernelArg(context->kernels.calc_dd_coeff, 1, sizeof(double), &problem->dy);
+    err |= clSetKernelArg(context->kernels.calc_dd_coeff, 2, sizeof(double), &problem->dz);
+    err |= clSetKernelArg(context->kernels.calc_dd_coeff, 3, sizeof(cl_mem), &buffers->eta);
+    err |= clSetKernelArg(context->kernels.calc_dd_coeff, 4, sizeof(cl_mem), &buffers->xi);
+    err |= clSetKernelArg(context->kernels.calc_dd_coeff, 5, sizeof(cl_mem), &buffers->dd_i);
+    err |= clSetKernelArg(context->kernels.calc_dd_coeff, 6, sizeof(cl_mem), &buffers->dd_j);
+    err |= clSetKernelArg(context->kernels.calc_dd_coeff, 7, sizeof(cl_mem), &buffers->dd_k);
+    check_ocl(err, "Setting diamond difference calculation kernel arguments");
+
+    err = clEnqueueNDRangeKernel(context->queue,
+        context->kernels.calc_dd_coeff,
+        1, 0, global, NULL,
+        0, NULL, &temp3);
+    if (async == 0) clFinish(context->queue);
+#endif //METACL
+#ifdef KERNEL_PROFILE
     clock_gettime(CLOCK_REALTIME, &end);
     ker_launch_over[3]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
     err = clGetEventProfilingInfo(temp3,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);
     err = clGetEventProfilingInfo(temp3,CL_PROFILING_COMMAND_END,sizeof(cl_ulong), &end_time,&return_bytes);
     ker_exec_time[3]+=(double)(end_time-start_time)/BILLION;
-    temp3=NULL;
     ker_call_nums[3]++;
-#else
-    err= metacl_outer_zero_and_others_calc_dd_coeff(context->queue, global, local, NULL, 1, NULL,problem->dx, problem->dy, problem->dz, &buffers->eta, &buffers->xi, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k);
 #endif //KERNEL_PROFILE
+    temp3=NULL;
     check_ocl(err, "Enqueue diamond difference calculation kernel");
 }
 
@@ -329,20 +365,45 @@ void calculate_denominator(
     cl_int err;
     size_t global[3] = {problem->nang, problem->ng,1};
     size_t local[3] ={0,0,0};
+    int async = 1;
 #ifdef KERNEL_PROFILE
     err=clFinish(context->queue);
     err=clFinish(context->copy_queue);
+    async =0;
 
     clock_gettime(CLOCK_REALTIME, &start);
-    err= metacl_outer_zero_and_others_calc_denominator(context->queue, global, local, NULL,0, &denominator_event,rankinfo->nx, rankinfo->ny, rankinfo->nz, problem->nang, problem->ng, &buffers->mat_cross_section, &buffers->velocity_delta, &buffers->mu, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k, &buffers->denominator);
+#endif //KERNEL_PROFILE
+#ifdef METACL
+    err= metacl_outer_zero_and_others_calc_denominator(context->queue, global, local, NULL, asyc, &denominator_event,rankinfo->nx, rankinfo->ny, rankinfo->nz, problem->nang, problem->ng, &buffers->mat_cross_section, &buffers->velocity_delta, &buffers->mu, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k, &buffers->denominator);
+#else
+    err = clSetKernelArg(context->kernels.calc_denominator, 0, sizeof(unsigned int), &rankinfo->nx);
+    err |= clSetKernelArg(context->kernels.calc_denominator, 1, sizeof(unsigned int), &rankinfo->ny);
+    err |= clSetKernelArg(context->kernels.calc_denominator, 2, sizeof(unsigned int), &rankinfo->nz);
+    err |= clSetKernelArg(context->kernels.calc_denominator, 3, sizeof(unsigned int), &problem->nang);
+    err |= clSetKernelArg(context->kernels.calc_denominator, 4, sizeof(unsigned int), &problem->ng);
+    err |= clSetKernelArg(context->kernels.calc_denominator, 5, sizeof(cl_mem), &buffers->mat_cross_section);
+    err |= clSetKernelArg(context->kernels.calc_denominator, 6, sizeof(cl_mem), &buffers->velocity_delta);
+    err |= clSetKernelArg(context->kernels.calc_denominator, 7, sizeof(cl_mem), &buffers->mu);
+    err |= clSetKernelArg(context->kernels.calc_denominator, 8, sizeof(cl_mem), &buffers->dd_i);
+    err |= clSetKernelArg(context->kernels.calc_denominator, 9, sizeof(cl_mem), &buffers->dd_j);
+    err |= clSetKernelArg(context->kernels.calc_denominator, 10, sizeof(cl_mem), &buffers->dd_k);
+    err |= clSetKernelArg(context->kernels.calc_denominator, 11, sizeof(cl_mem), &buffers->denominator);
+    check_ocl(err, "Setting denominator kernel arguments");
+
+    err = clEnqueueNDRangeKernel(context->queue,
+        context->kernels.calc_denominator,
+        2, 0, global, NULL,
+        0, NULL, &denominator_event);
+    if (async == 0) clFinish(context->queue);
+#endif //METACL
+#ifdef KERNEL_PROFILE
+>>>>>>> native-profile
     clock_gettime(CLOCK_REALTIME, &end);
     ker_launch_over[4]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
     err = clGetEventProfilingInfo(denominator_event,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);
     err = clGetEventProfilingInfo(denominator_event,CL_PROFILING_COMMAND_END,sizeof(cl_ulong), &end_time,&return_bytes);
     ker_exec_time[4]+=(double)(end_time-start_time)/BILLION;
     ker_call_nums[4]++;
-#else
-    err= metacl_outer_zero_and_others_calc_denominator(context->queue, global, local, NULL, 1, &denominator_event,rankinfo->nx, rankinfo->ny, rankinfo->nz, problem->nang, problem->ng, &buffers->mat_cross_section, &buffers->velocity_delta, &buffers->mu, &buffers->dd_i, &buffers->dd_j, &buffers->dd_k, &buffers->denominator);
 #endif //KERNEL_PROFILE
     check_ocl(err, "Enqueue denominator kernel");
 }

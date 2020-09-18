@@ -181,17 +181,29 @@ void allocate_buffers(
 void zero_buffer_inner(struct context * context, cl_mem buffer, size_t offset, size_t size)
 {
     cl_int err;
-#ifdef METACL
     size_t enq_off[3]={offset,0,0};
     size_t global[3] = {size,1,1};
     size_t local[3] = {0,0,0};
-#ifdef KERNEL_PROFILE
     cl_event temp2;
+    int async = 1;
+#ifdef KERNEL_PROFILE
     err=clFinish(context->queue);
     err=clFinish(context->copy_queue);
+    async = 0;
 
     clock_gettime(CLOCK_REALTIME, &start);
-    err = metacl_sweep_zero_inner_reducef_zero_buffer(context->queue, global, local, enq_off, 0, &temp2,&buffer);
+#endif //KERNEL_PROFILE
+#ifdef METACL
+    err = metacl_sweep_zero_inner_reducef_zero_buffer(context->queue, global, local, enq_off, async, &temp2, &buffer);
+#else
+    err = clSetKernelArg(context->kernels.zero_buffer_inner, 0, sizeof(cl_mem), &buffer);
+    check_ocl(err, "Setting buffer zero kernel argument");
+    err = clEnqueueNDRangeKernel(context->queue,
+        context->kernels.zero_buffer_inner,
+        1, &offset, &size, NULL, 0, NULL, &temp2);
+    if (async == 0) clFinish(context->queue);
+#endif //METACL
+#ifdef KERNEL_PROFILE
     clock_gettime(CLOCK_REALTIME, &end);
     ker_launch_over[8]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
     err = clGetEventProfilingInfo(temp2,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);
@@ -199,33 +211,36 @@ void zero_buffer_inner(struct context * context, cl_mem buffer, size_t offset, s
     ker_exec_time[8]+=(double)(end_time-start_time)/BILLION;
     temp2=NULL;
     ker_call_nums[8]++;
-#else
-    err = metacl_sweep_zero_inner_reducef_zero_buffer(context->queue, global, local, &enq_off, 1, NULL, &buffer);
 #endif //KERNEL_PROFILE
-#else
-    err = clSetKernelArg(context->kernels.zero_buffer_inner, 0, sizeof(cl_mem), &buffer);
-    check_ocl(err, "Setting buffer zero kernel argument");
-    err = clEnqueueNDRangeKernel(context->queue,
-        context->kernels.zero_buffer_inner,
-        1, &offset, &size, NULL, 0, NULL, NULL);
-#endif //METACL
     check_ocl(err, "Enqueueing buffer zero inner kernel");
 }
 
 void zero_buffer(struct context * context, cl_mem buffer, size_t offset, size_t size)
 {
     cl_int err;
-#ifdef METACL
     size_t global[3] = {size,1,1};
     size_t local[3] = {0,0,0};
     size_t enq_off[3]={offset,0,0};
-#ifdef KERNEL_PROFILE
     cl_event temp2;
+    int async = 1;
+#ifdef KERNEL_PROFILE
     err=clFinish(context->queue);
     err=clFinish(context->copy_queue);
+    async = 0;
 
     clock_gettime(CLOCK_REALTIME, &start);
-    err = metacl_outer_zero_and_others_zero_buffer(context->queue, global, local, enq_off, 0, &temp2,&buffer);
+#endif //KERNEL_PROFILE
+#ifdef METACL
+    err = metacl_outer_zero_and_others_zero_buffer(context->queue, global, local, enq_off, async, &temp2, &buffer);
+#else
+    err = clSetKernelArg(context->kernels.zero_buffer, 0, sizeof(cl_mem), &buffer);
+    check_ocl(err, "Setting buffer zero kernel argument");
+    err = clEnqueueNDRangeKernel(context->queue,
+        context->kernels.zero_buffer,
+        1, &offset, &size, NULL, 0, NULL, &temp2);
+    if (async == 0) clFinish(context->queue);
+#endif //METACL
+#ifdef KERNEL_PROFILE
     clock_gettime(CLOCK_REALTIME, &end);
     ker_launch_over[8]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
     err = clGetEventProfilingInfo(temp2,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);
@@ -233,16 +248,7 @@ void zero_buffer(struct context * context, cl_mem buffer, size_t offset, size_t 
     ker_exec_time[8]+=(double)(end_time-start_time)/BILLION;
     temp2=NULL;
     ker_call_nums[8]++;
-#else
-    err = metacl_outer_zero_and_others_zero_buffer(context->queue, global, local, &enq_off, 1, NULL, &buffer);
 #endif //KERNEL_PROFILE
-#else
-    err = clSetKernelArg(context->kernels.zero_buffer, 0, sizeof(cl_mem), &buffer);
-    check_ocl(err, "Setting buffer zero kernel argument");
-    err = clEnqueueNDRangeKernel(context->queue,
-        context->kernels.zero_buffer,
-        1, &offset, &size, NULL, 0, NULL, NULL);
-#endif //METACL
     check_ocl(err, "Enqueueing buffer zero kernel");
 }
 
