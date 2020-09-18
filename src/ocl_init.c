@@ -84,20 +84,25 @@ void init_ocl(struct context * context, const bool multigpu, const int rank)
         check_ocl(err, "Creating copy command queue");
     }
 
+    err = clGetDeviceInfo(context->device, CL_DEVICE_PLATFORM, sizeof(cl_platform_id), &context->platform, NULL);
+    check_ocl(err, "Querying device platform");
+#endif //METACL
     // Detect device type and vendor
     err = clGetDeviceInfo(context->device, CL_DEVICE_TYPE, sizeof(cl_device_type), &devType, NULL);
     check_ocl(err, "Querying device type");
     size_t name_size;
-    cl_platform_id plat;
-    err = clGetDeviceInfo(context->device, CL_DEVICE_PLATFORM, sizeof(cl_platform_id), &plat, NULL);
-    check_ocl(err, "Querying device platform");
-    err = clGetPlatformInfo(plat, CL_PLATFORM_NAME, 0, NULL, &name_size);
+    err = clGetPlatformInfo(context->platform, CL_PLATFORM_NAME, 0, NULL, &name_size);
     check_ocl(err, "Querying platform name length");
     platName = (char *)calloc(sizeof(char), name_size + 1);
-    err = clGetPlatformInfo(plat, CL_PLATFORM_NAME, name_size + 1, platName, NULL);
+    err = clGetPlatformInfo(context->platform, CL_PLATFORM_NAME, name_size + 1, platName, NULL);
     check_ocl(err, "Querying platform name");
-#endif //METACL
 
+    char *options = "-cl-mad-enable -cl-fast-relaxed-math";
+#ifdef METACL
+    __metacl_sweep_zero_inner_reducef_custom_args=options;
+    __metacl_outer_zero_and_others_custom_args=options;
+     meta_register_module(&metacl_metacl_module_registry);
+#else
     // Create program
     #define clBinaryProg(name) {\
        printf("Loading "#name".aocx\n"); \
@@ -110,22 +115,6 @@ FILE * f = fopen(#name".aocx", "r"); \
        fclose(f); \
        cl_int err; \
        name = clCreateProgramWithBinary(context->context, 1, &context->device , &len, &progSrc, NULL, &err);}
-    char *options = "-cl-mad-enable -cl-fast-relaxed-math";
-#ifdef METACL
-    __metacl_sweep_zero_inner_reducef_custom_args=options;
-    __metacl_outer_zero_and_others_custom_args=options;
-     meta_register_module(&metacl_metacl_module_registry);
-
-    // Detect device type and vendor
-    err = clGetDeviceInfo(context->device, CL_DEVICE_TYPE, sizeof(cl_device_type), &devType, NULL);
-    check_ocl(err, "Querying device type");
-    size_t name_size;
-    err = clGetPlatformInfo(context->platform, CL_PLATFORM_NAME, 0, NULL, &name_size);
-    check_ocl(err, "Querying platform name length");
-    platName = (char *)calloc(sizeof(char), name_size + 1);
-    err = clGetPlatformInfo(context->platform, CL_PLATFORM_NAME, name_size + 1, platName, NULL);
-    check_ocl(err, "Querying platform name");
-#else
     cl_program outer_zero_and_others;
     cl_program sweep_zero_inner_reducef;
     cl_int build_err;

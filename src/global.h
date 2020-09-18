@@ -6,12 +6,17 @@
 */
 
 #include <stdbool.h>
+#ifdef KERNEL_PROFILE
+#include <time.h>
+#define BILLION 1E9
+#endif //KERNEL_PROFILE
 #include <stdio.h>
 
 /** \brief Problem dimensions
 *
 * Read in from input file or calculated from those inputs
 */
+
 struct problem
 {
     /**@{ \brief Global grid size */

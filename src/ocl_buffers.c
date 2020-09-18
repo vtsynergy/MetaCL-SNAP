@@ -1,6 +1,13 @@
 
 #include "ocl_buffers.h"
-
+#ifdef KERNEL_PROFILE
+#include <time.h>
+extern double ker_launch_over[9];
+extern double ker_exec_time[9];
+extern int ker_call_nums[9];
+extern cl_ulong start_time, end_time;extern size_t return_bytes;
+extern struct timespec start, end;
+#endif //KERNEL_PROFILE
 
 void check_device_memory_requirements(
     struct problem * problem, struct rankinfo * rankinfo,
@@ -175,9 +182,26 @@ void zero_buffer_inner(struct context * context, cl_mem buffer, size_t offset, s
 {
     cl_int err;
 #ifdef METACL
+    size_t enq_off[3]={offset,0,0};
     size_t global[3] = {size,1,1};
     size_t local[3] = {0,0,0};
-    err = metacl_sweep_zero_inner_reducef_zero_buffer(context->queue, global, local, &offset, 1, NULL, &buffer);
+#ifdef KERNEL_PROFILE
+    cl_event temp2;
+    err=clFinish(context->queue);
+    err=clFinish(context->copy_queue);
+
+    clock_gettime(CLOCK_REALTIME, &start);
+    err = metacl_sweep_zero_inner_reducef_zero_buffer(context->queue, global, local, enq_off, 0, &temp2,&buffer);
+    clock_gettime(CLOCK_REALTIME, &end);
+    ker_launch_over[8]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
+    err = clGetEventProfilingInfo(temp2,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);
+    err = clGetEventProfilingInfo(temp2,CL_PROFILING_COMMAND_END,sizeof(cl_ulong), &end_time,&return_bytes);
+    ker_exec_time[8]+=(double)(end_time-start_time)/BILLION;
+    temp2=NULL;
+    ker_call_nums[8]++;
+#else
+    err = metacl_sweep_zero_inner_reducef_zero_buffer(context->queue, global, local, &enq_off, 1, NULL, &buffer);
+#endif //KERNEL_PROFILE
 #else
     err = clSetKernelArg(context->kernels.zero_buffer_inner, 0, sizeof(cl_mem), &buffer);
     check_ocl(err, "Setting buffer zero kernel argument");
@@ -194,7 +218,24 @@ void zero_buffer(struct context * context, cl_mem buffer, size_t offset, size_t 
 #ifdef METACL
     size_t global[3] = {size,1,1};
     size_t local[3] = {0,0,0};
-    err = metacl_outer_zero_and_others_zero_buffer(context->queue, global, local, &offset, 1, NULL, &buffer);
+    size_t enq_off[3]={offset,0,0};
+#ifdef KERNEL_PROFILE
+    cl_event temp2;
+    err=clFinish(context->queue);
+    err=clFinish(context->copy_queue);
+
+    clock_gettime(CLOCK_REALTIME, &start);
+    err = metacl_outer_zero_and_others_zero_buffer(context->queue, global, local, enq_off, 0, &temp2,&buffer);
+    clock_gettime(CLOCK_REALTIME, &end);
+    ker_launch_over[8]+=( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec )/ BILLION;
+    err = clGetEventProfilingInfo(temp2,CL_PROFILING_COMMAND_START,sizeof(cl_ulong),  &start_time,&return_bytes);
+    err = clGetEventProfilingInfo(temp2,CL_PROFILING_COMMAND_END,sizeof(cl_ulong), &end_time,&return_bytes);
+    ker_exec_time[8]+=(double)(end_time-start_time)/BILLION;
+    temp2=NULL;
+    ker_call_nums[8]++;
+#else
+    err = metacl_outer_zero_and_others_zero_buffer(context->queue, global, local, &enq_off, 1, NULL, &buffer);
+#endif //KERNEL_PROFILE
 #else
     err = clSetKernelArg(context->kernels.zero_buffer, 0, sizeof(cl_mem), &buffer);
     check_ocl(err, "Setting buffer zero kernel argument");
